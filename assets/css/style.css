@@ -1,0 +1,238 @@
+/* assets/css/style.css  -  BikeMo */
+
+:root {
+    --navy-dark: #0a1626;
+    --navy:      #11263d;
+    --teal:      #14405a;
+    --orange:    #ff6b1a;
+    --lime:      #b6ff3b;
+    --white:     #ffffff;
+    --muted:     #c9d4e0;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background: var(--navy-dark);
+    color: var(--white);
+}
+
+.orange { color: var(--orange); }
+
+/* ---------- NAVBAR ---------- */
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 28px;
+    background: var(--navy-dark);
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    color: var(--white);
+}
+
+.logo-text {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 32px;
+    letter-spacing: 2px;
+}
+
+.logo-wheel { animation: spin 6s linear infinite; }
+
+.nav-links { display: flex; gap: 10px; }
+
+/* ---------- BUTTONS ---------- */
+.btn {
+    display: inline-block;
+    padding: 14px 30px;
+    border-radius: 999px;
+    font-weight: 600;
+    font-size: 15px;
+    text-decoration: none;
+    cursor: pointer;
+    transition: transform .15s, box-shadow .15s, background .15s;
+}
+.btn:hover { transform: translateY(-2px); }
+
+.btn-sm { padding: 8px 20px; font-size: 14px; }
+
+.btn-orange {
+    background: var(--orange);
+    color: var(--white);
+    border: 2px solid var(--orange);
+    box-shadow: 0 8px 24px rgba(255, 107, 26, .45);
+}
+
+.btn-outline {
+    background: transparent;
+    color: var(--white);
+    border: 2px solid rgba(255, 255, 255, .65);
+}
+.btn-outline:hover { background: rgba(255, 255, 255, .1); }
+
+/* ---------- HERO ---------- */
+.hero {
+    position: relative;
+    overflow: hidden;
+    text-align: center;
+    padding: 40px 20px 0;
+    background: linear-gradient(180deg, var(--navy-dark) 0%, var(--navy) 55%, var(--teal) 100%);
+}
+
+.hero-content {
+    position: relative;
+    z-index: 2;
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+.badge {
+    display: inline-block;
+    padding: 8px 20px;
+    border-radius: 999px;
+    background: rgba(182, 255, 59, .12);
+    border: 1.5px solid rgba(182, 255, 59, .55);
+    color: var(--lime);
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: 1px;
+}
+
+.hero h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-weight: 400;
+    font-size: clamp(48px, 9vw, 84px);
+    line-height: 1;
+    margin: 22px 0 20px;
+    letter-spacing: 1px;
+}
+
+.hero-text {
+    max-width: 480px;
+    margin: 0 auto 30px;
+    color: var(--muted);
+    line-height: 1.7;
+}
+
+.hero-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 14px;
+    flex-wrap: wrap;
+}
+
+/* ---------- STATS ---------- */
+.stats {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    margin-top: 36px;
+    flex-wrap: wrap;
+}
+.stat strong {
+    display: block;
+    font-family: 'Bebas Neue', sans-serif;
+    font-weight: 400;
+    font-size: 44px;
+    color: var(--lime);
+    line-height: 1;
+}
+.stat span { font-size: 13px; color: var(--muted); }
+
+/* ---------- SUN + CLOUDS ---------- */
+.sun {
+    position: absolute;
+    top: 80px;
+    right: 6%;
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 40% 40%, #ff9a3c, var(--orange));
+    box-shadow: 0 0 80px rgba(255, 107, 26, .55);
+    animation: pulse 4s ease-in-out infinite;
+}
+
+.cloud {
+    position: absolute;
+    height: 30px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, .13);
+}
+.cloud-1 { top: 112px; right: 3%;  width: 110px; animation: drift 9s ease-in-out infinite alternate; }
+.cloud-2 { top: 300px; right: 8%;  width: 80px;  animation: drift 7s ease-in-out infinite alternate-reverse; }
+
+/* ---------- BIKE SCENE ---------- */
+.bike-scene {
+    position: relative;
+    z-index: 1;
+    height: 330px;
+    margin-top: 30px;
+}
+
+.mountains {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 200px;
+}
+
+.bike {
+    position: absolute;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: min(520px, 90%);
+    filter: drop-shadow(0 18px 20px rgba(0, 0, 0, .45));
+}
+
+/* ---------- WHEEL SPIN ---------- */
+/* transform-box: fill-box makes each wheel spin around ITS OWN center */
+.wheel {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: spin 1.6s linear infinite;
+}
+
+@keyframes spin  { to { transform: rotate(360deg); } }
+@keyframes pulse { 50% { transform: scale(1.06); } }
+@keyframes drift { to { transform: translateX(-24px); } }
+
+/* ---------- FLEET (placeholder) ---------- */
+.fleet {
+    text-align: center;
+    padding: 70px 20px;
+    background: var(--navy-dark);
+}
+.fleet h2 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-weight: 400;
+    font-size: 44px;
+    margin-bottom: 10px;
+}
+.fleet p { color: var(--muted); }
+
+/* ---------- FOOTER ---------- */
+.footer {
+    text-align: center;
+    padding: 20px;
+    font-size: 13px;
+    color: var(--muted);
+    background: #07101c;
+}
+
+/* ---------- SMALL SCREENS ---------- */
+@media (max-width: 600px) {
+    .navbar { padding: 14px 16px; }
+    .logo-text { font-size: 26px; }
+    .sun { width: 80px; height: 80px; top: 120px; }
+    .bike-scene { height: 260px; }
+}
