@@ -1,8 +1,4 @@
 <?php
-/* login.php - PLACEHOLDER so the landing page buttons work.
-   NEXT STEP: move the "view-auth" login form from BikeMo.txt here,
-   then check the email/password with the `users` table
-   (use password_verify() and a prepared statement). */
 require_once __DIR__ . '/includes/functions.php';
 $pageTitle = 'BikeMo | Log In';
 $base = '';

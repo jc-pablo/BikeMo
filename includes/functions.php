@@ -1,11 +1,4 @@
 <?php
-/* =========================================================
-   includes/functions.php  -  SHARED HELPER FUNCTIONS
-   Ported from the helper functions in the old BikeMo.txt
-   (esc, money, tint, bikeSVG, bikeCard ...).
-   Every page starts with:
-       require_once __DIR__ . '/includes/functions.php';
-   ========================================================= */
 
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
@@ -36,9 +29,6 @@ function is_logged_in(): bool {
 }
 
 /* ---------- bike data ---------- */
-
-// Used only when MySQL is off / database not imported yet,
-// so the landing page still shows bikes while you are developing.
 function sample_bikes(): array {
     $B = fn($id, $name, $type, $color, $h, $d, $gears, $frame, $weight, $desc, $status = 'available') => [
         'id' => $id, 'name' => $name, 'type' => $type, 'color' => $color,
@@ -47,7 +37,7 @@ function sample_bikes(): array {
     ];
     return [
         $B(1,  'Trailblazer X1',  'Mountain', '#ff6a1a', 80, 450, '21-speed', 'Aluminum', '14.5 kg', 'Rugged suspension bike built for trails, hills and rough roads.'),
-        $B(2,  'Velocity Pro',    'Road',     '#e63946', 90, 500, '18-speed', 'Carbon',   '9.8 kg',  'Ultra-light road bike for speed lovers and long smooth rides.'),
+        $B(2,  'Roader',    'Road',     '#e63946', 90, 500, '18-speed', 'Carbon',   '9.8 kg',  'Ultra-light road bike for speed lovers and long smooth rides.'),
         $B(3,  'Urban Cruiser',   'City',     '#12b5a6', 60, 350, '7-speed',  'Steel',    '13 kg',   'Comfortable upright bike for everyday city rides and errands.'),
         $B(4,  'Volt E-Rider',    'Electric', '#7b2ff7', 150, 900, 'Pedal-assist', 'Aluminum', '21 kg', 'Electric bike with up to 60 km range. Effortless on hills.'),
         $B(5,  'Pocket Fold',     'Folding',  '#ffb703', 55, 320, '6-speed',  'Aluminum', '11 kg',   'Folds in seconds. Perfect for commuters and small spaces.'),
@@ -59,7 +49,6 @@ function sample_bikes(): array {
     ];
 }
 
-// Bikes shown in the "Featured Bikes" section of the landing page.
 function get_featured_bikes($conn, int $limit = 4): array {
     if ($conn) {
         $stmt = $conn->prepare("SELECT * FROM bikes WHERE status = 'available' ORDER BY id LIMIT ?");

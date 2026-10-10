@@ -1,11 +1,4 @@
 <?php
-/* =========================================================
-   includes/header.php  -  top of every page (<head> + <body>)
-   Set these BEFORE including it:
-     $pageTitle  (string)  e.g. 'BikeMo | Login'
-     $base       (string)  '' for pages in the main folder,
-                           '../' for pages inside admin/
-   ========================================================= */
 $pageTitle = $pageTitle ?? 'BikeMo | Bike Rental Management System';
 $base      = $base ?? '';
 ?>

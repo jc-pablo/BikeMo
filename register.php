@@ -1,7 +1,4 @@
 <?php
-/* register.php - PLACEHOLDER so the landing page buttons work.
-   NEXT STEP: move the register form from BikeMo.txt here,
-   then INSERT into `users` using password_hash() and a prepared statement. */
 require_once __DIR__ . '/includes/functions.php';
 $pageTitle = 'BikeMo | Sign Up';
 $base = '';

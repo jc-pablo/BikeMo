@@ -1,8 +1,5 @@
 <?php
-/* =========================================================
-   index.php  -  LANDING PAGE  (http://localhost/bikemo/)
-   This is the "view-landing" section of the old BikeMo.txt.
-   ========================================================= */
+require_once __DIR__ . '/includes/db.php';
 require_once __DIR__ . '/includes/functions.php';
 
 $pageTitle = 'BikeMo | Bike Rental Management System';

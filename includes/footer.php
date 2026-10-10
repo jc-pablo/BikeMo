@@ -1,8 +1,4 @@
 <?php
-/* =========================================================
-   includes/footer.php  -  bottom of every public page
-   Needs $base (same as header.php).
-   ========================================================= */
 $base = $base ?? '';
 ?>
   <footer>
