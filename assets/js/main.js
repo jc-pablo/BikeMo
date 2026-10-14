@@ -155,7 +155,7 @@ function renderLanding(){
   const u = me();
   $('#landingNav').innerHTML = u
     ? `<button class="btn btn-lime btn-sm" onclick="goApp()">${u.role === 'admin' ? 'Admin Panel' : 'My Dashboard'} →</button>`
-    : `<button class="btn btn-ghost btn-sm" onclick="openAuth('login','admin')">Admin</button><button class="btn btn-ghost btn-sm" onclick="openAuth('login','user')">Log In</button><button class="btn btn-primary btn-sm" onclick="openAuth('register','user')">Sign Up</button>`;
+    : '<div class="nav-actions"><a href="login.php?role=admin" class="btn btn-ghost btn-sm">Admin</a><a href="login.php?role=user" class="btn btn-ghost btn-sm">Log In</a><a href="register.php" class="btn btn-primary btn-sm">Sign Up</a></div>';
   const feat = getBikes().filter(b => b.status === 'available').slice(0, 4);
   $('#featured').innerHTML = feat.map(b => bikeCard(b, true)).join('') || '<p style="text-align:center;opacity:.7;grid-column:1/-1">No bikes available right now.</p>';
   const words = ['MOUNTAIN','ROAD','CITY','ELECTRIC','FOLDING','BMX','RENT','RIDE','REPEAT'];
@@ -180,70 +180,6 @@ function countUp(el){
 }
 
 /* ============ AUTH ============ */
-let auth = {mode:'login', role:'user'};
-function openAuth(mode, role){ auth = {mode, role}; showView('auth'); renderAuth(); }
-function renderAuth(){
-  $('#authBike').innerHTML = bikeSVG('Electric', '#c6ff3d', true);
-  const {mode, role} = auth, admin = role === 'admin', login = mode === 'login';
-  $('#authBox').innerHTML = `
-    <button class="back-link" onclick="showView('landing')">← Back to home</button>
-    <div class="role-tabs">
-      <button class="${!admin ? 'on' : ''}" onclick="setAuth('${admin ? 'login' : mode}','user')">🚲 Customer</button>
-      <button class="${admin ? 'on' : ''}" onclick="setAuth('login','admin')">🛠️ Admin</button>
-    </div>
-    <h1>${login ? 'WELCOME BACK' : 'JOIN BIKEMO'}</h1>
-    <p class="sub">${admin ? 'Sign in to the admin panel to manage bikes and rentals.' : login ? 'Log in to rent a bike and view your history.' : 'Create your account in under a minute.'}</p>
-    <form onsubmit="submitAuth(event)" novalidate>
-      ${!login ? `<div class="field"><label>Full Name</label><input id="aName" placeholder="Juan Dela Cruz"></div>` : ''}
-      <div class="field"><label>Email</label><input id="aEmail" type="email" placeholder="you@email.com"></div>
-      ${!login ? `<div class="field"><label>Phone Number</label><input id="aPhone" placeholder="09XX XXX XXXX"></div>` : ''}
-      <div class="${!login ? 'two' : ''}">
-        <div class="field"><label>Password</label><div class="pw"><input id="aPass" type="password" placeholder="••••••••"><button type="button" onclick="togglePw()">👁️</button></div></div>
-        ${!login ? `<div class="field"><label>Confirm Password</label><input id="aPass2" type="password" placeholder="••••••••"></div>` : ''}
-      </div>
-      <button class="btn btn-primary" type="submit">${login ? 'Log In' : 'Create Account'} →</button>
-    </form>
-    ${!admin ? `<p class="switch">${login ? "Don't have an account?" : 'Already registered?'} <a onclick="setAuth('${login ? 'register' : 'login'}','user')">${login ? 'Sign up' : 'Log in'}</a></p>` : `<p class="switch">Admin accounts are managed by the system.</p>`}
-    ${login ? `<div class="demo">🔑 Demo accounts (click to fill):<br>
-      <button onclick="fillDemo('user@bikemo.com','user123')">Customer</button>
-      <button onclick="fillDemo('admin@bikemo.com','admin123')">Admin</button></div>` : ''}`;
-}
-function setAuth(mode, role){ auth = {mode, role}; renderAuth(); }
-function togglePw(){ const i = $('#aPass'); i.type = i.type === 'password' ? 'text' : 'password'; }
-function fillDemo(e, p){
-  const isAdmin = e.startsWith('admin');
-  if ((isAdmin ? 'admin' : 'user') !== auth.role){ auth.role = isAdmin ? 'admin' : 'user'; renderAuth(); }
-  $('#aEmail').value = e; $('#aPass').value = p;
-}
-function submitAuth(ev){
-  ev.preventDefault();
-  const email = $('#aEmail').value.trim().toLowerCase(), pass = $('#aPass').value;
-  if (!/^\S+@\S+\.\S+$/.test(email)) return toast('Please enter a valid email.', 'error');
-  if (!pass) return toast('Please enter your password.', 'error');
-  const users = getUsers();
-  if (auth.mode === 'login'){
-    const u = users.find(x => x.email === email && x.password === pass);
-    if (!u) return toast('Incorrect email or password.', 'error');
-    if (u.role !== auth.role) return toast(`This account is a ${u.role === 'admin' ? 'admin' : 'customer'} account. Use the ${u.role === 'admin' ? 'Admin' : 'Customer'} tab.`, 'warn');
-    return doLogin(u);
-  }
-  const name = $('#aName').value.trim(), phone = $('#aPhone').value.trim(), p2 = $('#aPass2').value;
-  if (name.length < 2) return toast('Please enter your full name.', 'error');
-  if (!/^[0-9+\-\s]{7,15}$/.test(phone)) return toast('Please enter a valid phone number.', 'error');
-  if (pass.length < 6) return toast('Password must be at least 6 characters.', 'error');
-  if (pass !== p2) return toast('Passwords do not match.', 'error');
-  if (users.some(x => x.email === email)) return toast('That email is already registered.', 'error');
-  const u = {id:uid('u_'), name, email, phone, password:pass, role:'user', created:Date.now()};
-  users.push(u); saveUsers(users);
-  toast('Account created! Welcome to BikeMo 🎉');
-  doLogin(u, true);
-}
-function doLogin(u, silent){
-  session = {id:u.id}; DB.set('bm_session', session);
-  if (!silent) toast(`Welcome back, ${u.name.split(' ')[0]}! 🚴`);
-  userPage = 'browse'; adminPage = 'dashboard';
-  goApp();
-}
 function logout(){
   session = null; localStorage.removeItem('bm_session');
   toast('You have been logged out.'); showView('landing');

@@ -1,4 +1,6 @@
-<?php require __DIR__ . '/includes/header.php'; ?>
+<?php require __DIR__ . '/includes/header.php';
+require __DIR__ . '/includes/db.php';
+?>
 <!-- ============ LANDING ============ -->
 <section id="view-landing" class="view">
   <nav class="nav" id="nav">
@@ -116,7 +118,13 @@
 
 <!-- ============ AUTH ============ -->
 <section id="view-auth" class="view hidden">
+  
   <div class="auth-wrap">
+    <div class="nav-actions">
+  <a href="login.php?role=admin" class="btn btn-ghost btn-sm">Admin</a>
+  <a href="login.php?role=user" class="btn btn-ghost btn-sm">Log In</a>
+  <a href="register.php" class="btn btn-primary btn-sm">Sign Up</a>
+</div>
     <div class="auth-side">
       <div class="logo" onclick="showView('landing')">Bike<b>Mo</b></div>
       <div>
@@ -129,6 +137,9 @@
     <div class="auth-main">
       <div class="auth-box" id="authBox"></div>
     </div>
+    
+
+
   </div>
 </section>
 
