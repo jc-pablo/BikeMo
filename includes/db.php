@@ -17,5 +17,5 @@ try {
     );
 } catch (PDOException $e) {
     error_log($e->getMessage());
-    exit('Database connection failed. Check MySQL and database settings.');
+    exit('Database connection failed.');
 }

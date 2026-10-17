@@ -150,19 +150,22 @@ function startRenting(){
 }
 
 /* ============ LANDING ============ */
-function renderLanding(){
-  $('#heroBike').innerHTML = bikeSVG('Mountain', '#ff6a1a', true);
-  const u = me();
-  $('#landingNav').innerHTML = u
-    ? `<button class="btn btn-lime btn-sm" onclick="goApp()">${u.role === 'admin' ? 'Admin Panel' : 'My Dashboard'} →</button>`
-    : '<div class="nav-actions"><a href="login.php?role=admin" class="btn btn-ghost btn-sm">Admin</a><a href="login.php?role=user" class="btn btn-ghost btn-sm">Log In</a><a href="register.php" class="btn btn-primary btn-sm">Sign Up</a></div>';
-  const feat = getBikes().filter(b => b.status === 'available').slice(0, 4);
-  $('#featured').innerHTML = feat.map(b => bikeCard(b, true)).join('') || '<p style="text-align:center;opacity:.7;grid-column:1/-1">No bikes available right now.</p>';
-  const words = ['MOUNTAIN','ROAD','CITY','ELECTRIC','FOLDING','BMX','RENT','RIDE','REPEAT'];
-  const row = words.map(w => `<span>${w}</span><span>★</span>`).join('');
-  $('#marq').innerHTML = row + row + row + row;
-  observeReveal();
+
+function renderLanding() {
+  // Dynamic featured bikes only
+  const featured = document.querySelector('#featured');
+
+  if (featured) {
+    const bikes = getBikes()
+      .filter(bike => bike.status === 'available')
+      .slice(0, 4);
+
+    featured.innerHTML = bikes
+      .map(bike => bikeCard(bike, true))
+      .join('');
+  }
 }
+
 window.addEventListener('scroll', () => $('#nav').classList.toggle('solid', window.scrollY > 40));
 function observeReveal(){
   const io = new IntersectionObserver(es => es.forEach(e => {
@@ -562,4 +565,10 @@ function adminCustomers(){
 
 /* ---------- Start ---------- */
 seed();
+
+const heroBike = document.getElementById('heroBike');
+if (heroBike) {
+  heroBike.innerHTML = bikeSVG('Mountain', '#ff6a1a', true);
+}
 showView('landing');
+observeReveal();  

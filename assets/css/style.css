@@ -220,6 +220,8 @@ display: flex;
 gap: 10px;
 }
 
+
+
 /* Hero */
 .hero {
 position: relative;
@@ -414,6 +416,22 @@ animation: marq 25s linear infinite;
 margin: 0 22px;
 }
 
+
+.marquee-track {
+  display: flex;
+  width: max-content;
+  flex-shrink: 0;
+  animation: marq 25s linear infinite;
+  will-change: transform;
+}
+
+.marquee-track span {
+  flex-shrink: 0;
+  margin: 0 22px;
+}
+
+
+
 /* Sections */
 .section {
 padding: 90px 0;
@@ -526,11 +544,15 @@ font-size: 2.6rem;
 .cat h3 {
 font-size: 1.5rem;
 margin-top: 8px;
+ color: #F8F4EB !important;
+    font-weight: 700;
 }
 
 .cat p {
 font-size: .8rem;
 opacity: .7;
+color: #DCE8F0 !important;
+    opacity: 1 !important;
 }
 
 .why {
@@ -809,8 +831,11 @@ max-width: 380px;
 }
 
 .auth-bike {
-animation: bob 2.6s ease-in-out infinite;
-max-width: 430px;
+ font-size: 4rem;
+    line-height: 1.2;
+    animation: bob 2.6s ease-in-out infinite;
+    max-width: 430px;
+    margin-bottom: 20px;
 }
 
 .auth-main {
@@ -1650,7 +1675,6 @@ border-color: var(--amber);
 
 /* Reveal + keyframes */
 .reveal {
-opacity: 0;
 transform: translateY(34px);
 transition: .8s;
 }
@@ -1693,11 +1717,16 @@ background-position: -100px 0;
 }
 }
 
+
 @keyframes marq {
-to {
-transform: translateX(-50%);
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
 }
-}
+
 
 @keyframes fade {
 from {
