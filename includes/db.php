@@ -1,5 +1,5 @@
-
 <?php
+
 $host = 'localhost';
 $dbname = 'bikemo';
 $username = 'root';
@@ -9,13 +9,15 @@ try {
     $pdo = new PDO(
         "mysql:host=$host;dbname=$dbname;charset=utf8mb4",
         $username,
-        $password,
-        [
-            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
-        ]
+        $password
     );
+
+    $pdo->setAttribute(
+        PDO::ATTR_ERRMODE,
+        PDO::ERRMODE_EXCEPTION
+    );
+
 } catch (PDOException $e) {
     error_log($e->getMessage());
-    exit('Database connection failed.');
+    die('Database connection failed.');
 }

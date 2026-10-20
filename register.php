@@ -7,41 +7,59 @@ $name = '';
 $email = '';
 $phone = '';
 
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $name = trim($_POST['name'] ?? '');
     $email = trim($_POST['email'] ?? '');
     $password = $_POST['password'] ?? '';
+    $phone = trim($_POST['phone'] ?? '');
+    $confirmPassword = $_POST['confirm_password'] ?? '';
 
-    if ($name === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)
-        || strlen($password) < 8) {
-        exit('Enter a valid name and email. Password must be at least 8 characters.');
+    // Validate the form
+    if (
+        $name === '' ||
+        !filter_var($email, FILTER_VALIDATE_EMAIL) ||
+        $phone === '' ||
+        strlen($password) < 8 ||
+        $password !== $confirmPassword
+    ) {
+        $errors[] = 'Check your name, email, phone, and password.';
     }
 
-    $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
-
-    try {
-        $stmt = $pdo->prepare(
-            'INSERT INTO users (name, email, password, role)
-             VALUES (?, ?, ?, ?)'
+    // Save only when there are no validation errors
+    if (empty($errors)) {
+        $hashedPassword = password_hash(
+            $password,
+            PASSWORD_DEFAULT
         );
 
-        // Public registration must never create an admin account.
-        $stmt->execute([
-            $name,
-            $email,
-            $hashedPassword,
-            'user'
-        ]);
+        try {
+            $stmt = $pdo->prepare(
+    'INSERT INTO users (name, email, phone, password, role)
+     VALUES (?, ?, ?, ?, ?)'
+);
 
-        header('Location: login.php?registered=1');
-        exit;
-    } catch (PDOException $e) {
-        if ($e->getCode() === '23000') {
-            exit('That email address is already registered.');
+            $stmt->execute([
+                $name,
+                $email,
+                $phone,
+                $hashedPassword,
+                'user'
+            ]);
+
+            header('Location: login.php?role=user&registered=1');
+            exit;
+
+        } catch (PDOException $e) {
+            if ($e->getCode() === '23000') {
+                $errors[] = 'That email address is already registered.';
+            } else {
+                error_log($e->getMessage());
+
+$errors[] = 'Registration failed: ' .
+    htmlspecialchars($e->getMessage(), ENT_QUOTES, 'UTF-8');
+            }
         }
-
-        error_log($e->getMessage());
-        exit('Registration failed. Please try again.');
     }
 }
 ?>
@@ -200,4 +218,3 @@ function togglePassword(id) {
 
 </body>
 </html>
-```
