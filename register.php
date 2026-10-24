@@ -209,12 +209,7 @@ $errors[] = 'Registration failed: ' .
     </main>
 </div>
 
-<script>
-function togglePassword(id) {
-    const input = document.getElementById(id);
-    input.type = input.type === 'password' ? 'text' : 'password';
-}
-</script>
+<script src="assets/js/auth.js"></script>
 
 </body>
 </html>

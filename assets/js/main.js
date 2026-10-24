@@ -166,7 +166,8 @@ function renderLanding() {
   }
 }
 
-window.addEventListener('scroll', () => $('#nav').classList.toggle('solid', window.scrollY > 40));
+
+window.addEventListener('scroll', () => $('#nav')?.classList.toggle('solid', window.scrollY > 40));   
 function observeReveal(){
   const io = new IntersectionObserver(es => es.forEach(e => {
     if (e.isIntersecting){
@@ -563,12 +564,123 @@ function adminCustomers(){
     </tbody></table></div></div>`;
 }
 
-/* ---------- Start ---------- */
+
+// BikeMo - Customer Dashboard scripts
+
+// Time-of-day greeting (uses the visitor's local clock)
+(function () {
+    var h = new Date().getHours();
+    var g = h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening';
+    document.getElementById('bm-greeting').textContent = g;
+})();
+
+// Rotating ride tips
+(function () {
+    var tips = [
+        'Adjust your saddle so your leg is almost fully extended at the bottom of the pedal stroke.',
+        'Always check your brakes and tire pressure before you roll out.',
+        'Wear a helmet and use lights when riding at dusk or in the evening.',
+        'Stay hydrated: sip water every 15–20 minutes on longer rides.',
+        'Signal early with your hand so drivers and other riders know your move.'
+    ];
+    var i = 0, el = document.getElementById('bm-tip-text');
+    setInterval(function () {
+        el.style.opacity = 0;
+        setTimeout(function () {
+            i = (i + 1) % tips.length;
+            el.textContent = tips[i];
+            el.style.opacity = 1;
+        }, 400);
+    }, 6000);
+})();
+
+/* ---------- Start --------    -- */
 seed();
 
 const heroBike = document.getElementById('heroBike');
 if (heroBike) {
   heroBike.innerHTML = bikeSVG('Mountain', '#ff6a1a', true);
 }
+/* ---------- Auth pages (login.php, register.php) ---------- */
+// Show / hide a password field. Defaults to the #password input.
+function togglePassword(id = 'password') {
+  const input = document.getElementById(id);
+  if (input) input.type = input.type === 'password' ? 'text' : 'password';
+}
+/* ---------- Dashboard: count-up ng mga numero sa cards ---------- */
+function bmCountUp(el) {
+  const target = parseInt(el.dataset.bmCount, 10) || 0;
+  if (target === 0 || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const duration = 900, t0 = performance.now();
+  el.textContent = '0';
+  (function tick(now) {
+    const p = Math.min((now - t0) / duration, 1);
+    el.textContent = Math.round(target * (1 - Math.pow(1 - p, 3)));   // ease-out
+    if (p < 1) requestAnimationFrame(tick);
+  })(t0);
+}
+/* ---------- Customer dashboard (customers/dashboard.php) ---------- */
+function initCustomerDashboard() {
+  // Time-of-day greeting
+  const greet = document.getElementById('bm-greeting');
+  if (greet) {
+    const h = new Date().getHours();
+    greet.textContent = h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening';
+      document.querySelectorAll('[data-bm-count]').forEach(bmCountUp);
+  }
+
+  // Rotating ride tips
+  const tipEl = document.getElementById('bm-tip-text');
+  if (tipEl) {
+    const tips = [
+      'Adjust your saddle so your leg is almost fully extended at the bottom of the pedal stroke.',
+      'Always check your brakes and tire pressure before you roll out.',
+      'Wear a helmet and use lights when riding at dusk or in the evening.',
+      'Stay hydrated: sip water every 15–20 minutes on longer rides.',
+      'Signal early with your hand so drivers and other riders know your move.'
+    ];
+    let i = 0;
+    setInterval(() => {
+      tipEl.style.opacity = 0;
+      setTimeout(() => {
+        i = (i + 1) % tips.length;
+        tipEl.textContent = tips[i];
+        tipEl.style.opacity = 1;
+      }, 400);
+    }, 6000);
+  }
+}
+document.addEventListener('DOMContentLoaded', initCustomerDashboard);
+
+/* ---------- Start (landing page only) ---------- */
+if ($('#view-landing')) {
+  seed();
+
+  const heroBike = document.getElementById('heroBike');
+  if (heroBike) {
+    heroBike.innerHTML = bikeSVG('Mountain', '#ff6a1a', true);
+  }
+  showView('landing');
+  observeReveal();
+}
+showView('landing');
+observeReveal(); 
 showView('landing');
 observeReveal();  
+
+/* Shared customer-page interactions */
+document.addEventListener('DOMContentLoaded', () => {
+  const q = document.getElementById('bikeSearch');
+  const type = document.getElementById('bikeType');
+  if (q && type) {
+    const filterBikes = () => document.querySelectorAll('.customer-bike').forEach(card => {
+      card.hidden = !(card.dataset.name.includes(q.value.toLowerCase()) && (!type.value || card.dataset.type === type.value));
+    });
+    q.addEventListener('input', filterBikes);
+    type.addEventListener('change', filterBikes);
+  }
+  const rentalFilter = document.getElementById('rentalFilter');
+  if (rentalFilter) rentalFilter.addEventListener('change', () => {
+    document.querySelectorAll('#rentalRows tr').forEach(row => row.hidden = !!rentalFilter.value && row.dataset.status !== rentalFilter.value);
+  });
+}); 

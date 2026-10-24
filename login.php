@@ -172,13 +172,7 @@ if (
     </main>
 </div>
 
-<script>
-function togglePassword() {
-    const input = document.getElementById('password');
-    input.type = input.type === 'password' ? 'text' : 'password';
-}
-</script>
+<script src="assets/js/auth.js"></script>
 
 </body>
 </html>
-```
