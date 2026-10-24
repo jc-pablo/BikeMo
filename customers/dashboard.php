@@ -44,7 +44,7 @@ try {
         "SELECT SUM(status = 'Ongoing')   AS ongoing,
                 SUM(status = 'Completed') AS completed,
                 COALESCE(SUM(total), 0)   AS spent
-         FROM transactions WHERE user_id = ?"
+         FROM rentals WHERE user_id = ?"
     );
     $stmt->execute([$userId]);
     $r         = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -53,10 +53,10 @@ try {
     $spent     = (float) $r['spent'];
 
     $stmt = $pdo->prepare(
-        "SELECT b.name, t.end_at
-         FROM transactions t JOIN bikes b ON b.id = t.bike_id
+        "SELECT b.name, t.end_time
+         FROM rentals t JOIN bikes b ON b.id = t.bike_id
          WHERE t.user_id = ? AND t.status = 'Ongoing'
-         ORDER BY t.end_at ASC LIMIT 1"
+         ORDER BY t.end_time ASC LIMIT 1"
     );
     $stmt->execute([$userId]);
     $nextReturn = $stmt->fetch(PDO::FETCH_ASSOC) ?: null;
@@ -102,7 +102,7 @@ try {
                 <strong><?= htmlspecialchars($name, ENT_QUOTES, 'UTF-8') ?></strong>
             </div>
             
-<a class="bm-user__logout" href="../logout.php">
+<a href="profile.php" style="color:inherit;margin-right:12px">My Profile</a><a class="bm-user__logout" href="../logout.php">
     Logout ⏻
 </a>
 
@@ -214,7 +214,7 @@ try {
                         <div class="bm-note">
                             <?php if ($nextReturn): ?>
                                 ⏰ Return <strong><?= $e($nextReturn['name']) ?></strong>
-                                by <?= $e(date('M j, g:i A', strtotime($nextReturn['end_at']))) ?>
+                                by <?= $e(date('M j, g:i A', strtotime($nextReturn['end_time']))) ?>
                             <?php else: ?>
                                 🌤️ No active rentals. Ready when you are!
                             <?php endif; ?>
@@ -239,6 +239,3 @@ try {
 </main>
 
 <?php require_once __DIR__ . '/../includes/footer.php'; ?>
-
-</body>
-</html>

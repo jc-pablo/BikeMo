@@ -30,11 +30,15 @@
           <a class="btn btn-ghost" href="#fleet" style="text-decoration:none">See the Fleet</a>
         </div>
         <div class="hero-stats">
-          <div><b data-count="10">0</b><small>Bikes in the fleet</small></div>
-          <div><b data-count="6">0</b><small>Bike categories</small></div>
-          <div><b data-count="24">0</b><small>Hours open (online)</small></div>
+          <div><b data-count="<?= $bikeCount ?>">0</b><small>Bikes in the fleet</small></div>
+          <div><b data-count="<?= $typeCount ?>">0</b><small>Bike categories</small></div>
+          <div><b data-count="<?= $activeRentals ?>">0</b><small>Ongoing rentals</small></div>
         </div>
       </div>
-      <div class="hero-bike" id="heroBike"></div>
+      <div class="hero-bike" id="heroBike">
+        <?php if (is_file(__DIR__ . '/../assets/images/hero-bike.jpg')): ?>
+          <img src="assets/images/hero-bike.jpg" alt="Featured bicycle">
+        <?php endif; ?>
+      </div>
     </div>
   </header>

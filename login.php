@@ -4,6 +4,7 @@ require_once __DIR__ . '/includes/db.php';
 
 $role = $_POST['role'] ?? $_GET['role'] ?? 'user';
 $error = '';
+if (isset($_GET['message'])) { $error = 'Please log in to access that page, or your account access has changed.'; }
 $email = '';
 
 if (!in_array($role, ['user', 'admin'], true)) {
@@ -11,12 +12,17 @@ if (!in_array($role, ['user', 'admin'], true)) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // PHP validation; do not rely on browser validation.
+
     $email = trim($_POST['email'] ?? '');
     $password = $_POST['password'] ?? '';
 
    
+if (!filter_var($email, FILTER_VALIDATE_EMAIL) || $password === '') {
+        $error = 'Enter a valid email and password.';
+    } else {
 $stmt = $pdo->prepare(
-    'SELECT id, name, email, password AS password_hash, role
+    'SELECT id, name, email, password AS password_hash, role, is_active
      FROM users
      WHERE email = ?
      LIMIT 1'
@@ -30,7 +36,7 @@ $stmt = $pdo->prepare(
 if (
     $user &&
     password_verify($password, $user['password_hash']) &&
-    $user['role'] === $role
+    $user['role'] === $role && (int)$user['is_active'] === 1
 ) {
     session_regenerate_id(true);
 
@@ -47,6 +53,7 @@ if (
     exit;
 } else {
     $error = 'Invalid email, password, or account type.';
+}
 }
 }
 ?>
@@ -129,11 +136,11 @@ if (
                     <input
                         id="email"
                         name="email"
-                        type="email"
+                        type="text"
                         placeholder="you@email.com"
                         value="<?= htmlspecialchars($email, ENT_QUOTES, 'UTF-8') ?>"
                         autocomplete="email"
-                        required>
+                       >
                 </div>
 
                 <div class="field">
@@ -145,7 +152,7 @@ if (
                             type="password"
                             placeholder="••••••••"
                             autocomplete="current-password"
-                            required>
+                           >
                         <button type="button"
                                 onclick="togglePassword()"
                                 aria-label="Show or hide password">👁️</button>

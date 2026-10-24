@@ -9,14 +9,19 @@ try {
   $stats['bikes'] = (int)$pdo->query('SELECT COUNT(*) FROM bikes')->fetchColumn();
   $stats['available'] = (int)$pdo->query("SELECT COUNT(*) FROM bikes WHERE status = 'available'")->fetchColumn();
   $stats['maintenance'] = (int)$pdo->query("SELECT COUNT(*) FROM bikes WHERE status = 'maintenance'")->fetchColumn();
-  $stats['rentals'] = (int)$pdo->query("SELECT COUNT(*) FROM transactions WHERE status = 'Ongoing'")->fetchColumn();
+  $stats['rentals'] = (int)$pdo->query("SELECT COUNT(*) FROM rentals WHERE status = 'Ongoing'")->fetchColumn();
   $stats['customers'] = (int)$pdo->query("SELECT COUNT(*) FROM users WHERE role = 'user'")->fetchColumn();
-  $stats['revenue'] = (float)$pdo->query("SELECT COALESCE(SUM(total),0) FROM transactions WHERE status = 'Completed'")->fetchColumn();
-  $recent = $pdo->query("SELECT t.booking_code, t.status, t.total, t.created_at, u.name AS customer_name, b.name AS bike_name FROM transactions t JOIN users u ON u.id=t.user_id JOIN bikes b ON b.id=t.bike_id ORDER BY t.created_at DESC LIMIT 6")->fetchAll(PDO::FETCH_ASSOC);
+  $stats['revenue'] = (float)$pdo->query("SELECT COALESCE(SUM(total),0) FROM rentals WHERE status = 'Completed'")->fetchColumn();
+  $recent = $pdo->query("SELECT t.code, t.status, t.total, t.created_at, u.name AS customer_name, b.name AS bike_name FROM rentals t JOIN users u ON u.id=t.user_id JOIN bikes b ON b.id=t.bike_id ORDER BY t.created_at DESC LIMIT 6")->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
   error_log($e->getMessage()); $pageError = 'Hindi mabasa ang dashboard data. I-check kung kumpleto ang tables sa BikeMo database.'; $recent = [];
 }
-function peso($amount): string { return '₱' . number_format((float)$amount, 2); }
+
+function peso(float|int|string $amount): string
+{
+    return '₱' . number_format((float) $amount, 2);
+}
+
 require __DIR__ . '/_header.php';
 ?>
 <?php if (!empty($pageError)): ?><div class="bm-admin-alert error"><?= adminEscape($pageError) ?></div><?php endif; ?>
@@ -31,7 +36,7 @@ require __DIR__ . '/_header.php';
   <section class="bm-admin-panel bm-admin-recent"><div class="bm-admin-panel-head"><div><h3>Recent bookings</h3><p>Latest activity from your customers</p></div><a href="rentals.php">View all →</a></div>
   <?php if (!$recent): ?><div class="bm-admin-empty"><span>▤</span><b>No bookings yet</b><p>New reservations will appear here.</p></div><?php else: ?>
   <div class="tbl-wrap"><table><thead><tr><th>Booking</th><th>Customer / Bike</th><th>Total</th><th>Status</th></tr></thead><tbody>
-  <?php foreach ($recent as $r): ?><tr><td><b><?= adminEscape($r['booking_code']) ?></b><small class="bm-admin-cell-sub"><?= adminEscape(date('M j, Y', strtotime($r['created_at']))) ?></small></td><td><?= adminEscape($r['customer_name']) ?><small class="bm-admin-cell-sub"><?= adminEscape($r['bike_name']) ?></small></td><td><b><?= peso($r['total']) ?></b></td><td><span class="bm-admin-status <?= strtolower($r['status']) ?>"><?= adminEscape($r['status']) ?></span></td></tr><?php endforeach; ?>
+  <?php foreach ($recent as $r): ?><tr><td><b><?= adminEscape($r['code']) ?></b><small class="bm-admin-cell-sub"><?= adminEscape(date('M j, Y', strtotime($r['created_at']))) ?></small></td><td><?= adminEscape($r['customer_name']) ?><small class="bm-admin-cell-sub"><?= adminEscape($r['bike_name']) ?></small></td><td><b><?= peso($r['total']) ?></b></td><td><span class="bm-admin-status <?= strtolower($r['status']) ?>"><?= adminEscape($r['status']) ?></span></td></tr><?php endforeach; ?>
   </tbody></table></div><?php endif; ?></section>
   <section class="bm-admin-panel bm-admin-quick"><div class="bm-admin-panel-head"><div><h3>Quick actions</h3><p>Common admin tasks</p></div></div>
     <a href="bikes.php#bike-form" class="bm-admin-quick-link"><span class="quick-icon orange">＋</span><span><b>Add a new bike</b><small>Create a bike listing and set its rates</small></span><i>→</i></a>

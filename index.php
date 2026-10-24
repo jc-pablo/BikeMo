@@ -1,5 +1,28 @@
-<?php require __DIR__ . '/includes/header.php';
-require __DIR__ . '/includes/db.php';
+<?php
+// Landing page: everything shown here comes from the actual MySQL database.
+require_once __DIR__ . '/includes/db.php';
+require_once __DIR__ . '/includes/bike_images.php';
+if (session_status() !== PHP_SESSION_ACTIVE) session_start();
+
+$bikeCount = (int) $pdo->query('SELECT COUNT(*) FROM bikes')->fetchColumn();
+$typeCount = (int) $pdo->query('SELECT COUNT(DISTINCT type) FROM bikes')->fetchColumn();
+$activeRentals = (int) $pdo->query("SELECT COUNT(*) FROM rentals WHERE status = 'Ongoing'")->fetchColumn();
+$featuredBikes = $pdo->query("SELECT * FROM bikes WHERE status = 'available' ORDER BY id DESC LIMIT 4")
+    ->fetchAll(PDO::FETCH_ASSOC);
+$latestReviews = $pdo->query(
+    'SELECT r.rating, r.comment, u.name AS reviewer, b.name AS bike_name
+     FROM bike_reviews r
+     JOIN users u ON u.id = r.user_id
+     JOIN bikes b ON b.id = r.bike_id
+     ORDER BY r.created_at DESC LIMIT 3'
+)->fetchAll(PDO::FETCH_ASSOC);
+
+// Signed-in customers go straight to their bike page.
+$rentUrl = !empty($_SESSION['user_id']) && ($_SESSION['role'] ?? '') === 'user'
+    ? 'customers/bikes.php'
+    : 'login.php?role=user';
+$esc = fn($text) => htmlspecialchars((string) $text, ENT_QUOTES, 'UTF-8');
+require __DIR__ . '/includes/header.php';
 ?>
 <!-- ============ LANDING ============ -->
 <section id="view-landing" class="view">
@@ -84,8 +107,32 @@ require __DIR__ . '/includes/db.php';
   <section class="section dark-sec" id="fleet">
     <div class="container">
       <div class="section-head reveal"><small style="color:var(--lime)">THE FLEET</small><h2>FEATURED BIKES</h2><p style="color:#b9c7d3">A peek at what is available right now.</p></div>
-      <div class="bike-grid" id="featured"></div>
-      <div style="text-align:center;margin-top:36px"><button class="btn btn-primary" onclick="startRenting()">View All Bikes →</button></div>
+      <div class="bike-grid" id="featured">
+        <?php foreach ($featuredBikes as $bike): ?>
+          <?php $images = bikeImages($bike); ?>
+          <article class="bike-card featured-real-bike">
+            <div class="bike-art">
+              <?php if ($images && bikePhotoExists($images[0])): ?>
+                <img src="<?= $esc($images[0]) ?>" alt="<?= $esc($bike['name']) ?>" loading="lazy">
+              <?php else: ?>
+                <div class="bike-art-fallback">🚲</div>
+              <?php endif; ?>
+              <span class="type"><?= $esc($bike['type']) ?></span>
+              <span class="badge available">Available</span>
+            </div>
+            <div class="bike-body">
+              <h3><?= $esc($bike['name']) ?></h3>
+              <p><?= $esc($bike['description'] ?: 'Ready for your next ride.') ?></p>
+              <div class="price"><b>₱<?= number_format((float) $bike['rate_per_hour'], 2) ?></b><small>/ hour</small></div>
+              <a class="btn btn-primary btn-sm" href="<?= $esc($rentUrl) ?>">Rent this bike →</a>
+            </div>
+          </article>
+        <?php endforeach; ?>
+        <?php if (!$featuredBikes): ?>
+          <div class="fleet-empty">No available bikes yet. Check back soon!</div>
+        <?php endif; ?>
+      </div>
+      <div style="text-align:center;margin-top:36px"><a class="btn btn-primary" href="<?= $esc($rentUrl) ?>">View All Bikes →</a></div>
     </div>
   </section>
 
@@ -117,44 +164,31 @@ require __DIR__ . '/includes/db.php';
 
   <section class="section dark-sec">
     <div class="container">
-      <div class="section-head reveal"><small style="color:var(--lime)">RIDER LOVE</small><h2>WHAT RIDERS SAY</h2></div>
+      <div class="section-head reveal">
+        <small style="color:var(--lime)">REAL RIDER REVIEWS</small>
+        <h2>WHAT OUR RIDERS SAY</h2>
+        <p>Feedback comes from customers who have rented a bike.</p>
+      </div>
       <div class="testi">
-        <blockquote class="reveal"><p>"Reserved a mountain bike in two minutes. The total was right there before I confirmed. So easy!"</p><cite>Mika R. · Weekend rider</cite></blockquote>
-        <blockquote class="reveal"><p>"I love seeing which bikes are really available. No more wasted trips to the shop."</p><cite>Jared T. · Commuter</cite></blockquote>
-        <blockquote class="reveal"><p>"The history page keeps track of my returns and payments. Super convenient."</p><cite>Aly S. · Tourist</cite></blockquote>
+        <?php foreach ($latestReviews as $review): ?>
+          <blockquote class="reveal">
+            <p><?= $esc($review['comment']) ?></p>
+            <cite><?= $esc($review['reviewer']) ?> · <?= $esc($review['bike_name']) ?> · <?= (int) $review['rating'] ?>/5 ★</cite>
+          </blockquote>
+        <?php endforeach; ?>
+        <?php if (!$latestReviews): ?>
+          <div class="bm-no-reviews">Reviews from verified renters will appear here once submitted.</div>
+        <?php endif; ?>
       </div>
     </div>
   </section>
 
   <section class="cta">
     <h2>READY TO ROLL?</h2><p>Create your free account and book your first ride today.</p>
-    <button class="btn btn-dark" onclick="startRenting()">Get Started →</button>
+    <a class="btn btn-dark" href="<?= $esc($rentUrl) ?>">Get Started →</a>
   </section>
 
 
 </section>
 
-<!-- ============ CUSTOMER APP ============ -->
-<section id="view-user" class="view hidden">
-  <div class="topbar">
-    <div class="container">
-      <div class="logo" onclick="showView('landing')">Bike<b>Mo</b></div>
-      <div class="tabs" id="userTabs"></div>
-      <div class="user-chip"><span id="userName"></span><div class="avatar" id="userAv"></div><button class="btn btn-ghost btn-sm" onclick="logout()">Logout</button></div>
-    </div>
-  </div>
-  <div class="page"><div class="container" id="userContent"></div></div>
-</section>
-
-<!-- ============ ADMIN APP ============ -->
-<section id="view-admin" class="view hidden">
-  <div class="admin-wrap">
-    <aside class="sidebar">
-      <div class="logo" onclick="showView('landing')">Bike<b>Mo</b></div>
-      <nav class="side-nav" id="adminNav"></nav>
-      <div style="font-size:.8rem;color:#9fb0bf;padding:10px 6px"><span id="adminName"></span><br><button class="btn btn-ghost btn-sm" style="margin-top:8px" onclick="logout()">Logout</button></div>
-    </aside>
-    <main class="admin-main" id="adminContent"></main>
-  </div>
-</section>
 <?php require __DIR__ . '/includes/footer.php'; ?>

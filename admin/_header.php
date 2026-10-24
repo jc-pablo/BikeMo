@@ -27,6 +27,7 @@ $adminName = $_SESSION['name'] ?? 'BikeMo Admin';
       <a class="<?= $adminPage === 'dashboard' ? 'active' : '' ?>" href="dashboard.php"><span>▦</span> Dashboard</a>
       <a class="<?= $adminPage === 'bikes' ? 'active' : '' ?>" href="bikes.php"><span>🚲</span> Manage Bikes</a>
       <a class="<?= $adminPage === 'rentals' ? 'active' : '' ?>" href="rentals.php"><span>▤</span> Rentals & Bookings</a>
+      <a class="<?= $adminPage === 'users' ? 'active' : '' ?>" href="users.php"><span>♙</span> Manage Users</a>
     </nav>
     <div class="bm-admin-sidebar-bottom">
       <div class="bm-admin-profile"><span class="bm-admin-avatar"><?= adminEscape(strtoupper(substr($adminName, 0, 1))) ?></span><span><b><?= adminEscape($adminName) ?></b><small>Administrator</small></span></div>

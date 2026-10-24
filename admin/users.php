@@ -3,6 +3,9 @@ require_once __DIR__ . '/../includes/db.php';
 require_once __DIR__ . '/../includes/auth.php';
 require_once __DIR__ . '/helpers.php';
 requireRole('admin');
+if (empty($_SESSION['csrf_admin'])) {
+    $_SESSION['csrf_admin'] = bin2hex(random_bytes(32));
+}
 $adminPage = 'users';
 $adminTitle = 'Manage Users';
 $message = '';

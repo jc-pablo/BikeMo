@@ -180,21 +180,24 @@ color: var(--navy);
 #landingNav a:visited {
   text-decoration: none;
 }
+/* NAVIGATION BAR */
 
 .nav {
-position: fixed;
-top: 0;
-left: 0;
-right: 0;
-z-index: 50;
-transition: .3s;
-padding: 14px 0;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 50;
+    padding: 14px 0;
+    transition: background 0.3s ease,
+                box-shadow 0.3s ease;
 }
 
+
 .nav.solid {
-background: rgba(11, 29, 46, .96);
-backdrop-filter: blur(8px);
-box-shadow: 0 4px 20px rgba(0, 0, 0, .25);
+    background: rgba(11, 29, 46, 0.97);
+    backdrop-filter: blur(12px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
 }
 
 .nav .container {
@@ -2303,3 +2306,77 @@ flex-wrap: wrap;
 @media(max-width:1100px){.bm-admin-shell{grid-template-columns:220px minmax(0,1fr)}.bm-admin-main{padding:0 22px}.bm-admin-stat-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.bm-admin-dashboard-grid{grid-template-columns:1fr}.bm-admin-form-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:700px){.bm-admin-shell{display:block}.bm-admin-sidebar{position:static;height:auto;min-height:0;padding:16px}.bm-admin-logo{padding:0 4px 16px}.bm-admin-nav{grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}.bm-admin-nav-label,.bm-admin-sidebar-bottom{display:none}.bm-admin-nav a{flex-direction:column;gap:4px;text-align:center;padding:10px 4px;font-size:.68rem}.bm-admin-nav a span{font-size:1rem}.bm-admin-main{padding:0 14px}.bm-admin-topbar{padding:20px 0}.bm-admin-topbar h1{font-size:1.8rem}.bm-admin-eyebrow{font-size:.56rem}.bm-admin-viewsite{font-size:.68rem;padding:8px 10px}.bm-admin-welcome{align-items:flex-start;flex-direction:column;padding:21px}.bm-admin-welcome h2{font-size:1.65rem}.bm-admin-stat-grid{gap:10px}.bm-admin-stat{padding:15px}.bm-admin-stat strong{font-size:1.7rem}.bm-admin-stat-icon{margin-bottom:10px}.bm-admin-form-grid{grid-template-columns:1fr}.bm-admin-field-wide{grid-column:auto}.bm-admin-panel-head{padding:17px}.bm-admin-form{padding:16px}.bm-admin-mini-stats{grid-template-columns:1fr}.bm-admin-filters{padding:13px}.bm-admin-filters input{flex-basis:100%}.bm-admin-footer{flex-direction:column}.bm-admin-page-intro{align-items:flex-start}.bm-admin-rental-status{min-width:170px}}
 
+
+/* MP enhancements: keep existing BikeMo colors and layout */
+.bm-cart-edit { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:8px; }
+.bm-cart-edit input,.bm-cart-edit select { max-width:155px; padding:8px; border:1px solid #d9dde5; border-radius:8px; }
+.bm-photo-strip { display:flex; flex-wrap:wrap; gap:14px; margin:15px 0; }
+.bm-photo-strip img { height:85px; object-fit:cover; border-radius:10px; }
+
+/* ---------------------------------------------------------------------
+   Real bike photos (shares the original BikeMo navy/orange palette)
+   --------------------------------------------------------------------- */
+.hero-bike { min-height: 275px; display: grid; place-items: center; }
+.hero-bike img, .hero-bike svg { display: block; width: 100%; max-height: 395px; object-fit: contain; }
+.hero-bike svg { filter: drop-shadow(0 20px 30px rgba(0,0,0,.22)); }
+.hero .hero-grid { isolation: isolate; }
+.hero-wheel { opacity: .8; }
+.featured-real-bike .bike-art { padding: 0; min-height: 210px; background: #eff4f2; }
+.featured-real-bike .bike-art > img { display:block; height: 215px; width: 100%; object-fit: contain; }
+.featured-real-bike .bike-art .type { z-index: 1; }
+.featured-real-bike .bike-art .badge { z-index: 1; }
+.featured-real-bike .bike-body p { color: var(--muted); margin: 8px 0 14px; font-size: .82rem; }
+.featured-real-bike .bike-body .price { align-items: center; }
+.featured-real-bike .bike-body .btn { justify-content: center; text-decoration: none; }
+.bike-art-fallback { display:grid;place-items:center;min-height:190px;width:100%;font-size:5rem;color:var(--orange);background:linear-gradient(135deg,#e4eff2,#fff5e9); }
+.fleet-empty { color:#fff;grid-column:1/-1;text-align:center;padding:28px; }
+.customer-bike-art .bm-bike-photo { display:block;height:100%;width:100%;object-fit:contain; }
+.bm-admin-bike-thumb { width:55px;height:50px;border-radius:10px;object-fit:cover;flex-shrink:0; }
+.bike-photo-choice { display:flex; flex-direction:column;gap:8px;background:#faf7f1;padding:8px;border-radius:12px;font-size:.74rem; }
+.bike-photo-choice img { width:110px;height:85px;object-fit:contain; }
+.bm-admin-form .field small { display:block;font-size:.72rem;color:var(--muted);margin-top:5px; }
+.bm-customer-profile-link { color:var(--orange);font-size:.82rem;font-weight:600;text-decoration:none; }
+.bm-detail-page { max-width:980px;padding-top:45px;padding-bottom:65px; }
+.bm-detail-panel { margin:20px 0;padding:26px; }
+.bm-detail-panel h1 { font-size:2.9rem;color:var(--navy);margin:9px 0; }
+.bm-detail-panel h2 { font-size:2rem;color:var(--navy);margin-bottom:18px; }
+.bm-detail-panel p { color:var(--muted); }
+.bm-detail-category { color:var(--orange);font-size:.75rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase; }
+.bm-gallery { display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;margin-top:22px; }
+.bm-gallery img { display:block;width:100%;height:215px;object-fit:contain;border:1px solid var(--line);border-radius:12px;background:#f9f7f2; }
+.bm-detail-rates { display:flex;align-items:center;flex-wrap:wrap;gap:18px;margin-top:20px;color:var(--navy); }
+.bm-review-form { display:grid;gap:14px;margin-bottom:20px; }
+.bm-review-form label { display:grid;gap:7px;font-weight:600;font-size:.82rem;color:var(--navy); }
+.bm-review-form select,.bm-review-form textarea { padding:11px 13px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--ink); }
+.bm-review-form button { justify-self:start; }
+.bm-review-entry { border-top:1px solid var(--line);padding:16px 0; }
+.bm-review-entry p { margin-top:8px;white-space:pre-wrap; }
+.bm-back-link { color:var(--navy);font-weight:600;text-decoration:none; }
+@media(max-width:720px) { .hero-bike { min-height:205px; }.hero-bike svg { max-height:260px; } }
+.bm-rental-filterbar { display:flex;justify-content:space-between;align-items:center;gap:15px;margin-bottom:18px; }
+.bm-rental-filterbar h2 {font-size:1.8rem;color:var(--navy);}
+.bm-rental-filterbar select {border:1px solid var(--line);padding:10px;border-radius:10px;background:#fff;}
+.bm-no-reviews {color:#b9c7d3;padding:25px;text-align:center;grid-column:1/-1;}
+
+.hero-bike .hero-wheel {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: heroWheelSpin 1s linear infinite;
+}
+
+@keyframes heroWheelSpin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Stop animation for reduced-motion preference */
+@media (prefers-reduced-motion: reduce) {
+    .hero-bike .hero-wheel {
+        animation: none;
+    }
+}

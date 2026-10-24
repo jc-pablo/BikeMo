@@ -1,5 +1,8 @@
 <?php
 
+// Rental dates are displayed in Philippine local time.
+date_default_timezone_set('Asia/Manila');
+
 $host = 'localhost';
 $dbname = 'bikemo';
 $username = 'root';

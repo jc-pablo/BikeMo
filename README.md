@@ -1,2 +1,1 @@
-# BikeMo
-para san to
+para san ba to

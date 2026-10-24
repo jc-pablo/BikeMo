@@ -1,11 +1,15 @@
 <?php
 session_start();
 require_once __DIR__ . '/includes/db.php';
+require_once __DIR__ . '/includes/uploads.php';
+
 
 $errors = [];
+
 $name = '';
 $email = '';
 $phone = '';
+$photo = null;
 
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -28,6 +32,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // Save only when there are no validation errors
     if (empty($errors)) {
+        try { $photo = savePhoto($_FILES['photo'] ?? [], 'users'); } catch (RuntimeException $e) { $errors[] = $e->getMessage(); }
+        if (!$errors) {
         $hashedPassword = password_hash(
             $password,
             PASSWORD_DEFAULT
@@ -35,8 +41,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         try {
             $stmt = $pdo->prepare(
-    'INSERT INTO users (name, email, phone, password, role)
-     VALUES (?, ?, ?, ?, ?)'
+    'INSERT INTO users (name, email, phone, password, role, photo)
+     VALUES (?, ?, ?, ?, ?, ?)'
 );
 
             $stmt->execute([
@@ -44,7 +50,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $email,
                 $phone,
                 $hashedPassword,
-                'user'
+                'user',
+                $photo
             ]);
 
             header('Location: login.php?role=user&registered=1');
@@ -56,9 +63,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             } else {
                 error_log($e->getMessage());
 
-$errors[] = 'Registration failed: ' .
-    htmlspecialchars($e->getMessage(), ENT_QUOTES, 'UTF-8');
+$errors[] = 'Registration failed. Please check your database setup.';
             }
+        }
         }
     }
 }
@@ -130,7 +137,7 @@ $errors[] = 'Registration failed: ' .
                 </div>
             <?php endif; ?>
 
-            <form method="POST" action="register.php" novalidate>
+            <form enctype="multipart/form-data" method="POST" action="register.php" novalidate>
                 <div class="field">
                     <label for="name">Full Name</label>
                     <input
@@ -195,10 +202,12 @@ $errors[] = 'Registration failed: ' .
                     </div>
                 </div>
 
-                <button class="btn btn-primary" type="submit">
-                    Create Account →
-                </button>
-            </form>
+                <div class="field">
+                    <label for="photo">Profile photo (optional, JPG/PNG/WebP)</label>
+                    <input id="photo" name="photo" type="file" accept="image/jpeg,image/png,image/webp">
+                </div>
+                <button class="btn btn-primary" type="submit">Create Account →</button>
+</form>
 
             <p class="switch">
                 Already registered?
