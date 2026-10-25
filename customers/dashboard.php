@@ -32,6 +32,7 @@ try {
         "SELECT COUNT(*) AS total, MIN(rate_per_hour) AS min_rate
          FROM bikes WHERE status = 'available'"
     )->fetch(PDO::FETCH_ASSOC);
+    
     $availableBikes = (int) $row['total'];
     $minRate        = $row['min_rate'];
 
@@ -47,6 +48,7 @@ try {
          FROM rentals WHERE user_id = ?"
     );
     $stmt->execute([$userId]);
+    
     $r         = $stmt->fetch(PDO::FETCH_ASSOC);
     $ongoing   = (int) $r['ongoing'];
     $completed = (int) $r['completed'];
@@ -59,12 +61,12 @@ try {
          ORDER BY t.end_time ASC LIMIT 1"
     );
     $stmt->execute([$userId]);
+    
     $nextReturn = $stmt->fetch(PDO::FETCH_ASSOC) ?: null;
 } catch (PDOException $ex) {
-    error_log($ex->getMessage());   // hindi mamamatay ang page kahit may DB error
+    error_log($ex->getMessage()); // hindi mamamatay ang page kahit may DB error
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -78,7 +80,6 @@ try {
 
 <header class="bm-header">
     <div class="container bm-header__inner">
-
         <a class="bm-brand" href="dashboard.php">
             <span class="bm-brand__icon">🚲</span>
             <span class="bm-brand__text">Bike<b>Mo</b></span>
@@ -102,12 +103,11 @@ try {
                 <strong><?= htmlspecialchars($name, ENT_QUOTES, 'UTF-8') ?></strong>
             </div>
             
-<a href="profile.php" style="color:inherit;margin-right:12px">My Profile</a><a class="bm-user__logout" href="../logout.php">
-    Logout ⏻
-</a>
-
+            <a href="profile.php" style="color:inherit;margin-right:12px">My Profile</a>
+            <a class="bm-user__logout" href="../logout.php">
+                Logout ⏻
+            </a>
         </div>
-
     </div>
 </header>
 
@@ -127,8 +127,16 @@ try {
 
             <!-- Animated rider -->
             <svg class="bm-rider" viewBox="0 0 120 70" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                <g class="bm-wheel"><circle cx="24" cy="48" r="16" fill="none" stroke="#fff" stroke-width="4"/><line x1="24" y1="32" x2="24" y2="64" stroke="#fff" stroke-width="1.5"/><line x1="8" y1="48" x2="40" y2="48" stroke="#fff" stroke-width="1.5"/></g>
-                <g class="bm-wheel"><circle cx="96" cy="48" r="16" fill="none" stroke="#fff" stroke-width="4"/><line x1="96" y1="32" x2="96" y2="64" stroke="#fff" stroke-width="1.5"/><line x1="80" y1="48" x2="112" y2="48" stroke="#fff" stroke-width="1.5"/></g>
+                <g class="bm-wheel">
+                    <circle cx="24" cy="48" r="16" fill="none" stroke="#fff" stroke-width="4"/>
+                    <line x1="24" y1="32" x2="24" y2="64" stroke="#fff" stroke-width="1.5"/>
+                    <line x1="8" y1="48" x2="40" y2="48" stroke="#fff" stroke-width="1.5"/>
+                </g>
+                <g class="bm-wheel">
+                    <circle cx="96" cy="48" r="16" fill="none" stroke="#fff" stroke-width="4"/>
+                    <line x1="96" y1="32" x2="96" y2="64" stroke="#fff" stroke-width="1.5"/>
+                    <line x1="80" y1="48" x2="112" y2="48" stroke="#fff" stroke-width="1.5"/>
+                </g>
                 <path d="M24 48 L48 24 L82 24 L96 48 M48 24 L58 48 L24 48 M58 48 L82 24" fill="none" stroke="#ffb703" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
                 <path d="M82 24 L88 14 L100 14" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
                 <path d="M44 24 L46 16 L56 16" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
@@ -140,9 +148,18 @@ try {
 
         <!-- QUICK PERKS -->
         <section class="bm-stats">
-            <div class="bm-stat bm-reveal d1"><div class="ico">⚡</div><div><b>Instant booking</b><span>Reserve in a few clicks</span></div></div>
-            <div class="bm-stat bm-reveal d2"><div class="ico">🛡️</div><div><b>Well-maintained</b><span>Every bike road-checked</span></div></div>
-            <div class="bm-stat bm-reveal d3"><div class="ico">🌿</div><div><b>Ride green</b><span>Zero emissions, all fun</span></div></div>
+            <div class="bm-stat bm-reveal d1">
+                <div class="ico">⚡</div>
+                <div><b>Instant booking</b><span>Reserve in a few clicks</span></div>
+            </div>
+            <div class="bm-stat bm-reveal d2">
+                <div class="ico">🛡️</div>
+                <div><b>Well-maintained</b><span>Every bike road-checked</span></div>
+            </div>
+            <div class="bm-stat bm-reveal d3">
+                <div class="ico">🌿</div>
+                <div><b>Ride green</b><span>Zero emissions, all fun</span></div>
+            </div>
         </section>
 
         <!-- ACTIONS -->

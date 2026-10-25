@@ -19,11 +19,7 @@ $adminTitle = 'Rentals & Bookings';
 $message = '';
 $error = '';
 
-/*
-|--------------------------------------------------------------------------
-| Update rental status
-|--------------------------------------------------------------------------
-*/
+//UPDATE RENTAL STATUS
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $token = $_POST['csrf_token'] ?? '';
 
@@ -71,11 +67,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 $update->execute([$status, $returnedAt, $id]);
 
-                /*
-                 * Sync bike availability when a rental is completed.
-                 * Only release the bike if no other ongoing rental
-                 * references that bike.
-                 */
                 if (
                     $status === 'Completed' &&
                     $rental['status'] !== 'Completed'
@@ -129,11 +120,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-/*
-|--------------------------------------------------------------------------
-| Search, filters, and rental records
-|--------------------------------------------------------------------------
-*/
+// FETCH RENTALS
 $filter = $_GET['status'] ?? '';
 $search = trim($_GET['q'] ?? '');
 

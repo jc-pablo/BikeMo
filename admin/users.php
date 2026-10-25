@@ -22,12 +22,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } elseif (!in_array($role, ['user', 'admin'], true) || !in_array($active, [0, 1], true)) {
         $error = 'Invalid role or account status.';
     } else {
-        $stmt = $pdo->prepare('UPDATE users SET role = ?, is_active = ? WHERE id = ?');
+        $stmt = $pdo->prepare('UPDATE users     
+                               SET role = ?, is_active = ? WHERE id = ?');
         $stmt->execute([$role, $active, $id]);
         $message = 'User updated.';
     }
 }
-$users = $pdo->query('SELECT id, name, email, role, is_active, photo FROM users ORDER BY id DESC')->fetchAll(PDO::FETCH_ASSOC);
+$users = $pdo->query('SELECT id, name, email, role, is_active, photo 
+                    FROM users ORDER BY id DESC')->fetchAll(PDO::FETCH_ASSOC);
 require __DIR__ . '/_header.php';
 ?>
 <div class="bm-admin-panel" style="padding:24px">

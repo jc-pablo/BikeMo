@@ -20,7 +20,7 @@ function requireRole(string $role): void
         exit;
     }
 
-    // Check the user's account role
+    // Check user account role
     if (($_SESSION['role'] ?? '') !== $role) {
         http_response_code(403);
         exit('Access denied.');
