@@ -77,3 +77,15 @@ CREATE TABLE IF NOT EXISTS `expenses` (
     PRIMARY KEY (`id`),
     KEY `idx_expenses_month` (`expense_month`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+INSERT INTO `bikes` (`name`, `type`, `color`, `rate_per_hour`, `rate_per_day`, `gears`, `frame`, `weight`, `description`, `status`)
+SELECT 'Trail Explorer', 'Mountain', '#4f7c43', 100.00, 500.00, '21 speed', 'Aluminum', '15 kg', 'Trail bike for exploring mountain adventures!', 'available'
+WHERE NOT EXISTS (SELECT 1 FROM `bikes` WHERE `name` = 'Trail Explorer');
+
+INSERT INTO `bikes` (`name`, `type`, `color`, `rate_per_hour`, `rate_per_day`, `gears`, `frame`, `weight`, `description`, `status`)
+SELECT 'City Commuter', 'City', '#1976d2', 60.00, 300.00, '7 speed', 'Aluminum', '13 kg', 'City bike where you can ride freely on city like bgc', 'available'
+WHERE NOT EXISTS (SELECT 1 FROM `bikes` WHERE `name` = 'City Commuter');
+
+INSERT INTO `bikes` (`name`, `type`, `color`, `rate_per_hour`, `rate_per_day`, `gears`, `frame`, `weight`, `description`, `status`)
+SELECT 'Folding Go', 'Folding', '#ff6a1a', 50.00, 250.00, '6 speed', 'Steel', '12 kg', 'Pocketable bike if you are tired you can ride it on bus!', 'available'
+WHERE NOT EXISTS (SELECT 1 FROM `bikes` WHERE `name` = 'Folding Go');

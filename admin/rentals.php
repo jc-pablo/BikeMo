@@ -19,7 +19,6 @@ $adminTitle = 'Rentals & Bookings';
 $message = '';
 $error = '';
 
-// Update the complete order as one transaction, then email its itemized receipt.
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $token = $_POST['csrf_token'] ?? '';
     if (!is_string($token) || !hash_equals($_SESSION['csrf_admin'] ?? '', $token)) {
@@ -71,7 +70,7 @@ foreach ($orderRows as $row) {
     if ($status === 'Completed' && $row['status'] !== 'Completed') {
         $dueTimestamp = strtotime($row['end_time']);
 
-        $graceSeconds = 30 * 60; // 30 minutes
+        $graceSeconds = 30 * 60; 
         $lateRatePerHour = 50;   // PHP 50 per late hour
 
         $lateSeconds = max(
