@@ -1,5 +1,4 @@
 <?php
-// Upload helper for JPG, PNG and WebP images (maximum 3 MB).
 function savePhoto(array $file, string $folder): string
 {
     if (($file['error'] ?? UPLOAD_ERR_NO_FILE) === UPLOAD_ERR_NO_FILE) {

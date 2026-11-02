@@ -1,7 +1,5 @@
 
 <?php
-
-// Start the session
 if (session_status() !== PHP_SESSION_ACTIVE) {
     session_start();
 }

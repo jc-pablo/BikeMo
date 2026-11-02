@@ -73,43 +73,12 @@ try {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Customer Dashboard | BikeMo</title>
-    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="../assets/css/style.css?v=profile-fix-20261102">
     <script src="../assets/js/main.js" defer></script>
 </head>
 <body>
 
-<header class="bm-header">
-    <div class="container bm-header__inner">
-        <a class="bm-brand" href="dashboard.php">
-            <span class="bm-brand__icon">🚲</span>
-            <span class="bm-brand__text">Bike<b>Mo</b></span>
-        </a>
-
-        <nav class="bm-nav" aria-label="Main navigation">
-            <?php foreach ($navItems as $file => [$icon, $label]): ?>
-                <a href="<?= $file ?>"
-                   class="bm-nav__link<?= $current === $file ? ' is-active' : '' ?>"
-                   <?= $current === $file ? 'aria-current="page"' : '' ?>>
-                    <span class="bm-nav__icon"><?= $icon ?></span>
-                    <span><?= $label ?></span>
-                </a>
-            <?php endforeach; ?>
-        </nav>
-
-        <div class="bm-user">
-            <div class="bm-user__avatar"><?= htmlspecialchars($initial, ENT_QUOTES, 'UTF-8') ?></div>
-            <div class="bm-user__info">
-                <small>Signed in as</small>
-                <strong><?= htmlspecialchars($name, ENT_QUOTES, 'UTF-8') ?></strong>
-            </div>
-            
-            <a href="profile.php" style="color:inherit;margin-right:12px">My Profile</a>
-            <a class="bm-user__logout" href="../logout.php">
-                Logout ⏻
-            </a>
-        </div>
-    </div>
-</header>
+<?php require __DIR__ . '/../includes/customer_nav.php'; ?>
 
 <main class="page">
     <div class="container">

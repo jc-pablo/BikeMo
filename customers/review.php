@@ -21,7 +21,6 @@ if (empty($_SESSION['csrf_customer'])) {
     $_SESSION['csrf_customer'] = bin2hex(random_bytes(32));
 }
 
-// Only customers who actually booked this bike can write a review.
 $stmt = $pdo->prepare('SELECT COUNT(*) FROM rentals WHERE user_id = ? AND bike_id = ?');
 $stmt->execute([$userId, $bikeId]);
 $eligible = (int) $stmt->fetchColumn() > 0;
@@ -73,9 +72,10 @@ $photos = bikeImages($bike);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title><?= $e($bike['name']) ?> | BikeMo</title>
-    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="../assets/css/style.css?v=profile-fix-20261102">
 </head>
 <body class="customer-page">
+    <?php require __DIR__ . '/../includes/customer_nav.php'; ?>
     <main class="container bm-detail-page">
         <a href="bikes.php" class="bm-back-link">← Back to Browse Bikes</a>
         

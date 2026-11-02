@@ -112,17 +112,6 @@ $errors[] = 'Registration failed. Please check your database setup.';
                 ← Back to home
             </a>
 
-            <div class="role-tabs">
-                <a href="login.php?role=user"
-                   style="text-align:center;text-decoration:none;padding:11px;border-radius:50px;color:var(--muted);font-weight:600">
-                    🚲 Customer
-                </a>
-                <a href="login.php?role=admin"
-                   style="text-align:center;text-decoration:none;padding:11px;border-radius:50px;color:var(--muted);font-weight:600">
-                    🛠️ Admin
-                </a>
-            </div>
-
             <h1>JOIN BIKEMO</h1>
             <p class="sub">Create your account in under a minute.</p>
 

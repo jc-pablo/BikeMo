@@ -1,5 +1,4 @@
 <?php
-// Pages in customers/ use ../; index.php uses the project root.
 $assetPrefix = $assetPrefix ?? (strpos($_SERVER['SCRIPT_NAME'] ?? '', '/customers/') !== false ? '../' : '');
 $isHomePage = basename($_SERVER['SCRIPT_NAME'] ?? '') === 'index.php';
 ?>

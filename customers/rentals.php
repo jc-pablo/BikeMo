@@ -8,8 +8,8 @@ $peso = fn($value) => '₱' . number_format((float) $value, 2);
 $userId = (int) $_SESSION['user_id'];
 
 $stmt = $pdo->prepare(
-    'SELECT r.code, r.start_time, r.end_time, r.qty, r.unit,
-            r.total, r.payment, r.status, r.created_at, b.id AS bike_id, b.name AS bike_name
+    'SELECT r.code, r.start_time, r.end_time, r.duration_value, r.unit,
+            r.total, r.late_fee, r.payment, r.status, r.created_at, b.id AS bike_id, b.name AS bike_name
      FROM rentals r JOIN bikes b ON b.id = r.bike_id
      WHERE r.user_id = ? ORDER BY r.created_at DESC'
 );
@@ -27,7 +27,7 @@ foreach ($rentals as $rental) {
     if ($rental['status'] === 'Completed') {
         $completed++;
     }
-    $totalSpent += (float) $rental['total'];
+    $totalSpent += (float) $rental['total'] + (float) $rental['late_fee'];
 }
 ?>
 <!DOCTYPE html>
@@ -36,7 +36,7 @@ foreach ($rentals as $rental) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>My Rentals | BikeMo</title>
-    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="../assets/css/style.css?v=profile-fix-20261102">
     <script src="../assets/js/main.js" defer></script>
 </head>
 <body>
@@ -98,10 +98,19 @@ foreach ($rentals as $rental) {
                                 <td>
                                     <?= $e(date('M j, Y g:i A', strtotime($rental['start_time']))) ?><br>
                                     <small>Due: <?= $e(date('M j, Y g:i A', strtotime($rental['end_time']))) ?></small><br>
-                                    <small><?= (int) $rental['qty'] ?> <?= $e($rental['unit']) ?></small>
+                                    <small><?= (int) $rental['duration_value'] ?> <?= $e($rental['unit']) ?></small>
                                 </td>
                                 <td>
-                                    <b><?= $peso($rental['total']) ?></b><br>
+                                    <b>
+                                 <?= $peso((float) $rental['total'] + (float) $rental['late_fee']) ?>
+                                    </b><br>
+
+                                <small>Rental: <?= $peso($rental['total']) ?></small><br>
+
+                                <?php if ((float) $rental['late_fee'] > 0): ?>
+                                <small>Late fee: <?= $peso($rental['late_fee']) ?></small><br>
+                                <?php endif; ?>
+
                                     <small><?= $e($rental['payment']) ?></small>
                                 </td>
                                 <td>

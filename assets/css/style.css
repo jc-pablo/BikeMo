@@ -2380,3 +2380,34 @@ flex-wrap: wrap;
         animation: none;
     }
 }
+
+
+/* Customer profile photo shown in the shared header and profile screen */
+.bm-user__avatar-link { display:block;width:40px;height:40px;flex:0 0 40px;border-radius:50%;text-decoration:none; }
+.bm-user__avatar-image { display:block;width:40px;height:40px;object-fit:cover;border-radius:50%;box-shadow:0 0 0 3px rgba(255,255,255,.16); }
+.bm-user__avatar-link .bm-user__avatar { width:40px;height:40px; }
+.bm-profile-summary { display:flex;align-items:center;gap:16px;margin:18px 0 26px;padding:16px;border-radius:14px;background:#f7f8fa; }
+.bm-profile-photo { width:88px;height:88px;flex:0 0 88px;border-radius:50%;object-fit:cover;border:3px solid #fff;box-shadow:0 3px 14px rgba(15,23,42,.14); }
+.bm-profile-photo--fallback { display:grid;place-items:center;background:linear-gradient(135deg,#ffb703,#14b8a6);color:#0f172a;font-size:2rem;font-weight:700; }
+.bm-profile-summary strong,.bm-profile-summary span { display:block; }
+.bm-profile-summary span { margin-top:4px;color:var(--muted); }
+
+.bm-admin-profile { color:inherit;text-decoration:none; }
+.bm-admin-avatar-photo { width:38px;height:38px;flex:0 0 38px;border-radius:50%;object-fit:cover;border:2px solid #c6ff3d; }
+.bm-admin-profile-editor { max-width:760px;padding:24px; }
+.bm-admin-profile-editor h2 { margin-bottom:16px; }
+
+
+/* Profile-photo layout hardening */
+.bm-admin-avatar-frame { width:38px;height:38px;flex:0 0 38px;display:block;overflow:hidden;border-radius:50%; }
+.bm-admin-avatar-photo { display:block;width:38px;height:38px;max-width:38px;max-height:38px;object-fit:cover;border-radius:50%; }
+.bm-user__avatar-link { width:40px;height:40px;overflow:hidden;border-radius:50%; }
+.bm-user__avatar-image { width:40px;height:40px;max-width:40px;max-height:40px;object-fit:cover; }
+.bm-profile-photo { display:block;width:88px;height:88px;max-width:88px;max-height:88px;object-fit:cover; }
+.bm-profile-form,.bm-admin-profile-form { display:grid;grid-template-columns:minmax(0,1fr);gap:16px; }
+.bm-profile-form label,.bm-admin-profile-form .field { display:grid;grid-template-columns:minmax(0,1fr);gap:7px;min-width:0; }
+.bm-profile-form input,.bm-admin-profile-form input { box-sizing:border-box;width:100%;min-width:0; }
+.bm-profile-form button,.bm-admin-profile-form button { justify-self:start; }
+@media(max-width:720px) { .bm-profile-summary { align-items:flex-start; } }
+.bm-expense-month-filter{position:relative;z-index:1;display:flex;align-items:end;gap:10px;flex-wrap:wrap}.bm-expense-month-filter label{display:block;width:100%;font-size:.7rem;font-weight:600;color:#d2dee7}.bm-expense-month-filter input{border:1px solid #ffffff35;border-radius:10px;background:#ffffff12;color:#fff;padding:10px 12px;font:500 .8rem 'Poppins',sans-serif;color-scheme:dark}.bm-expense-month-filter .btn{padding:10px 15px;white-space:nowrap}.bm-expense-form textarea{width:100%;resize:vertical;font:400 .82rem 'Poppins',sans-serif;color:var(--ink)}.bm-expense-actions{white-space:nowrap}.bm-expense-actions>a,.bm-expense-delete,.bm-expense-cancel{font:600 .75rem 'Poppins',sans-serif;color:#3977c3;text-decoration:none;background:none;border:0;padding:4px;cursor:pointer}.bm-expense-actions form{display:inline;margin:0}.bm-expense-delete{color:#bb363a}.bm-expense-total{display:flex;justify-content:space-between;align-items:center;gap:20px;padding:15px 22px;border-top:1px solid #f0eadf;color:var(--muted);font-size:.8rem}.bm-expense-total span{display:block}.bm-expense-total strong{display:block;margin-left:auto;text-align:right;font-size:1.15rem;color:var(--navy);white-space:nowrap}
+.bm-profile-photo--fallback{display:grid;place-items:center;text-align:center;line-height:1;padding:0}

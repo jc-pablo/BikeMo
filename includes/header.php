@@ -1,4 +1,4 @@
-<?php //Page Header ?>
+<?php  ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>

@@ -19,102 +19,142 @@ $adminTitle = 'Rentals & Bookings';
 $message = '';
 $error = '';
 
-//UPDATE RENTAL STATUS
+// Update the complete order as one transaction, then email its itemized receipt.
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $token = $_POST['csrf_token'] ?? '';
-
-    if (
-        !is_string($token) ||
-        !hash_equals($_SESSION['csrf_admin'] ?? '', $token)
-    ) {
+    if (!is_string($token) || !hash_equals($_SESSION['csrf_admin'] ?? '', $token)) {
         $error = 'Security check failed. Refresh the page and try again.';
     } else {
         $id = (int) ($_POST['id'] ?? 0);
         $status = $_POST['status'] ?? '';
-
-        if (
-            $id < 1 ||
-            !in_array($status, ['Ongoing', 'Completed'], true)
-        ) {
+        if ($id < 1 || !in_array($status, ['Ongoing', 'Completed'], true)) {
             $error = 'Invalid booking or status.';
         } else {
             try {
                 $pdo->beginTransaction();
-
-                $find = $pdo->prepare(
-                    'SELECT bike_id, status
-                     FROM rentals
-                     WHERE id = ?
-                     FOR UPDATE'
-                );
+                $find = $pdo->prepare('SELECT order_code FROM rentals WHERE id = ? FOR UPDATE');
                 $find->execute([$id]);
+                $orderCode = $find->fetchColumn();
+                if (!$orderCode) throw new RuntimeException('Order not found.');
 
-                $rental = $find->fetch(PDO::FETCH_ASSOC);
+               $itemsQuery = $pdo->prepare(
+    'SELECT id, bike_id, status, end_time, returned_at, late_fee
+     FROM rentals
+     WHERE order_code = ?
+     FOR UPDATE'
+);
+$itemsQuery->execute([$orderCode]);
+$orderRows = $itemsQuery->fetchAll(PDO::FETCH_ASSOC);
 
-                if (!$rental) {
-                    throw new RuntimeException('Booking not found.');
-                }
+if (!$orderRows) {
+    throw new RuntimeException('Order not found.');
+}
 
-                $update = $pdo->prepare(
-                    'UPDATE rentals
-                     SET status = ?, returned_at = ?
-                     WHERE id = ?'
-                );
+$statusChanged = false;
+$bikeIds = [];
 
-                $returnedAt = $status === 'Completed'
-                    ? date('Y-m-d H:i:s')
-                    : null;
+$updateOne = $pdo->prepare(
+    'UPDATE rentals
+     SET status = ?, returned_at = ?, late_fee = ?
+     WHERE id = ?'
+);
 
-                $update->execute([$status, $returnedAt, $id]);
+$returnTime = new DateTimeImmutable('now');
 
-                if (
-                    $status === 'Completed' &&
-                    $rental['status'] !== 'Completed'
-                ) {
-                    $other = $pdo->prepare(
-                        "SELECT COUNT(*)
-                         FROM rentals
-                         WHERE bike_id = ?
-                           AND status = 'Ongoing'
-                           AND id <> ?"
-                    );
+foreach ($orderRows as $row) {
+    if ($row['status'] !== $status) {
+        $statusChanged = true;
+    }
 
-                    $other->execute([$rental['bike_id'], $id]);
+    $bikeIds[(int) $row['bike_id']] = true;
 
-                    if ((int) $other->fetchColumn() === 0) {
-                        $bike = $pdo->prepare(
-                            "UPDATE bikes
-                             SET status = 'available'
-                             WHERE id = ?
-                               AND status = 'rented'"
-                        );
+    if ($status === 'Completed' && $row['status'] !== 'Completed') {
+        $dueTimestamp = strtotime($row['end_time']);
 
-                        $bike->execute([$rental['bike_id']]);
-                    }
-                } elseif ($status === 'Ongoing') {
-                    $bike = $pdo->prepare(
-                        "UPDATE bikes
-                         SET status = 'rented'
-                         WHERE id = ?
-                           AND status = 'available'"
-                    );
+        $graceSeconds = 30 * 60; // 30 minutes
+        $lateRatePerHour = 50;   // PHP 50 per late hour
 
-                    $bike->execute([$rental['bike_id']]);
-                }
+        $lateSeconds = max(
+            0,
+            $returnTime->getTimestamp() - $dueTimestamp - $graceSeconds
+        );
 
+        $lateHours = (int) ceil($lateSeconds / 3600);
+        $lateFee = $lateHours * $lateRatePerHour;
+        $returnedAt = $returnTime->format('Y-m-d H:i:s');
+    } elseif ($status === 'Completed') {
+        // Preserve the saved fee and return time if already completed.
+        $lateFee = (float) $row['late_fee'];
+        $returnedAt = $row['returned_at'];
+    } else {
+        // Reset these if the order is changed back to Ongoing.
+        $lateFee = 0;
+        $returnedAt = null;
+    }
+
+    $updateOne->execute([
+        $status,
+        $returnedAt,
+        $lateFee,
+        (int) $row['id'],
+    ]);
+}
                 $pdo->commit();
-                $message = 'Booking status updated successfully.';
+                $message = 'Order status updated successfully.';
 
-            } catch (Throwable $e) {
-                if ($pdo->inTransaction()) {
-                    $pdo->rollBack();
+                if ($statusChanged) {
+                    try {
+                        require_once __DIR__ . '/../PHPMailer/mailer.php';
+                        require_once __DIR__ . '/../includes/receipt_pdf.php';
+                        $details = $pdo->prepare(
+                            'SELECT u.name AS customer_name, u.email AS customer_email,
+                                    r.code, r.start_time, r.end_time, r.duration_value, r.unit, r.total, r.late_fee,
+                                    b.name AS bike_name
+                             FROM rentals r
+                             JOIN users u ON u.id = r.user_id
+                             JOIN bikes b ON b.id = r.bike_id
+                             WHERE r.order_code = ? ORDER BY r.id'
+                        );
+                        $details->execute([$orderCode]);
+                        $orderItems = $details->fetchAll(PDO::FETCH_ASSOC);
+                        if ($orderItems) {
+                            $customer = ['name' => $orderItems[0]['customer_name'], 'email' => $orderItems[0]['customer_email']];
+                            $grandTotal = array_sum(array_map(fn($item) => (float) $item['total']  + (float) $item['late_fee'], $orderItems));
+                            $body = "Hello {$customer['name']},\n\n" .
+                                "The status of order {$orderCode} is now {$status}.\n\nProducts/services:\n";
+                            foreach ($orderItems as $item) {
+                               $lineTotal = (float) $item['total'] + (float) $item['late_fee'];
+
+                            $body .= '- ' . $item['bike_name'] .
+                             ' (' . (int) $item['duration_value'] . ' ' . $item['unit'] . ')' .
+                              ' — rental subtotal PHP ' . number_format((float) $item['total'], 2) .
+                             ' — late fee PHP ' . number_format((float) $item['late_fee'], 2) .
+                               ' — line total PHP ' . number_format($lineTotal, 2) . "\n";
+                            }
+                            $body .= "\nGrand total: PHP " . number_format($grandTotal, 2) . "\n\n" .
+                                'The transaction receipt is attached as a PDF.';
+                            $tmpPdf = tempnam(sys_get_temp_dir(), 'bm-receipt-');
+                            if ($tmpPdf === false) throw new RuntimeException('Could not create receipt file.');
+                            file_put_contents($tmpPdf, bikeMoReceiptPdf($orderCode, $customer, $orderItems, $grandTotal, $status));
+                            $sent = sendBikeMoEmail(
+                                $customer['email'], $customer['name'],
+                                'BikeMo order ' . $orderCode . ' status: ' . $status,
+                                $body, $tmpPdf, 'BikeMo-' . $orderCode . '-receipt.pdf'
+                            );
+                            @unlink($tmpPdf);
+                            if (!$sent) $error = 'Status saved, but email was not sent. Check Mailtrap SMTP settings.';
+                            else $message .= ' Customer email and PDF receipt sent to the Mailtrap inbox.';
+                        }
+                    } catch (Throwable $mailError) {
+                        if (isset($tmpPdf) && is_file($tmpPdf)) @unlink($tmpPdf);
+                        error_log('BikeMo status email error: ' . $mailError->getMessage());
+                        $error = 'Status saved, but the receipt email failed. Check Mailtrap SMTP settings and server logs.';
+                    }
                 }
-
+            } catch (Throwable $e) {
+                if ($pdo->inTransaction()) $pdo->rollBack();
                 error_log($e->getMessage());
-
-                $error = $e instanceof RuntimeException
-                    ? $e->getMessage()
-                    : 'Hindi na-update ang booking. I-check ang database columns at bike status values.';
+                $error = $e instanceof RuntimeException ? $e->getMessage() : 'The order could not be updated. Check that the database migration was applied.';
             }
         }
     }
@@ -130,9 +170,14 @@ $sql = "
         r.code,
         r.start_time,
         r.end_time,
-        r.qty,
+        r.duration_value,
+        r.order_code,
+        (SELECT SUM(r2.total + r2.late_fee)
+        FROM rentals r2
+        WHERE r2.order_code = r.order_code) AS order_total,
         r.unit,
         r.total,
+        r.late_fee,
         r.payment,
         r.status,
         r.created_at,
@@ -157,6 +202,7 @@ if ($search !== '') {
     $sql .= "
         AND (
             r.code LIKE ?
+            OR r.order_code LIKE ?
             OR u.name LIKE ?
             OR u.email LIKE ?
             OR b.name LIKE ?
@@ -165,7 +211,7 @@ if ($search !== '') {
 
     $like = '%' . $search . '%';
 
-    array_push($params, $like, $like, $like, $like);
+    array_push($params, $like, $like, $like, $like, $like);
 }
 
 $sql .= ' ORDER BY r.created_at DESC';
@@ -296,7 +342,8 @@ require __DIR__ . '/_header.php';
                 <?php foreach ($rentals as $r): ?>
                     <tr>
                         <td>
-                            <b><?= adminEscape($r['code']) ?></b>
+                            <b><?= adminEscape($r['order_code']) ?></b>
+                            <small class="bm-admin-cell-sub">Order total ₱<?= number_format((float) $r['order_total'], 2) ?></small>
 
                             <small class="bm-admin-cell-sub">
                                 Booked
@@ -334,7 +381,7 @@ require __DIR__ . '/_header.php';
                             </small>
 
                             <small class="bm-admin-cell-sub">
-                                <?= (int) $r['qty'] ?>
+                                <?= (int) $r['duration_value'] ?>
                                 <?= adminEscape($r['unit']) ?>
                             </small>
                         </td>
@@ -345,8 +392,14 @@ require __DIR__ . '/_header.php';
                             </b>
 
                             <small class="bm-admin-cell-sub">
-                                <?= adminEscape($r['payment']) ?>
-                            </small>
+                        Bike subtotal · <?= adminEscape($r['payment']) ?>
+                        </small>
+
+<?php if ((float) $r['late_fee'] > 0): ?>
+    <small class="bm-admin-cell-sub">
+        Late fee: ₱<?= number_format((float) $r['late_fee'], 2) ?>
+    </small>
+<?php endif; ?>
                         </td>
 
                         <td>

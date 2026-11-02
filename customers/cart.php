@@ -18,28 +18,26 @@ $limits = ['hours' => 72, 'days' => 30, 'weeks' => 8];
 $notice = '';
 $error = '';
 
-// Only server-side PHP calculates the final rental amount.
-function rentalPrice(array $bike, int $quantity, string $unit): float
+function rentalPrice(array $bike, int $duration, string $unit): float
 {
     $rate = $unit === 'hours' ? (float) $bike['rate_per_hour'] : (float) $bike['rate_per_day'];
     $days = $unit === 'weeks' ? 7 : 1;
-    $subtotal = $rate * $quantity * $days;
+    $subtotal = $rate * $duration * $days;
     return round($unit === 'weeks' ? $subtotal * 0.85 : $subtotal, 2);
 }
 
 function validCartDetails(array $data, array $limits): bool
 {
     $unit = $data['unit'] ?? '';
-    $quantity = $data['quantity'] ?? 0;
+    $duration = $data['duration'] ?? 0;
     $pickup = strtotime($data['start_at'] ?? '');
     
     return isset($limits[$unit]) &&
-        is_numeric($quantity) && (int) $quantity == $quantity &&
-        (int) $quantity >= 1 && (int) $quantity <= $limits[$unit] &&
+        is_numeric($duration) && (int) $duration == $duration &&
+        (int) $duration >= 1 && (int) $duration <= $limits[$unit] &&
         $pickup !== false && $pickup >= time();
 }
 
-// Load records from MySQL. Session only stores the customer's selections.
 function cartBikes(PDO $pdo, array $cart): array
 {
     $items = [];
@@ -51,7 +49,7 @@ function cartBikes(PDO $pdo, array $cart): array
         if (!$bike) continue;
         
         $bike['cart'] = $selection;
-        $bike['rental_total'] = rentalPrice($bike, (int) $selection['quantity'], $selection['unit']);
+        $bike['rental_total'] = rentalPrice($bike, (int) $selection['duration'], $selection['unit']);
         $items[] = $bike;
     }
     
@@ -71,14 +69,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $selection = [
             'bike_id'  => $id,
             'start_at' => trim($_POST['start_at'] ?? ''),
-            'quantity' => $_POST['quantity'] ?? '',
+            'duration' => $_POST['duration'] ?? '',
             'unit'     => $_POST['unit'] ?? ''
         ];
         
         if (!isset($_SESSION['cart'][$id]) || !validCartDetails($selection, $limits)) {
             $error = 'Enter a future pick-up time and valid duration.';
         } else {
-            $selection['quantity'] = (int) $selection['quantity'];
+            $selection['duration'] = (int) $selection['duration'];
             $selection['start_at'] = date('Y-m-d H:i:s', strtotime($selection['start_at']));
             $_SESSION['cart'][$id] = $selection;
             $notice = 'Cart updated.';
@@ -92,9 +90,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $pdo->beginTransaction();
                 
                 $find = $pdo->prepare('SELECT * FROM bikes WHERE id = ? FOR UPDATE');
+                $orderCode = 'ORD' . date('ymd') . strtoupper(bin2hex(random_bytes(3)));
+                $orderLines = [];
                 $insert = $pdo->prepare(
-                    "INSERT INTO rentals (code, user_id, bike_id, start_time, end_time, qty, unit, total, payment, status)
-                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'Ongoing')"
+                    "INSERT INTO rentals (code, order_code, user_id, bike_id, start_time, end_time, duration_value, unit, total, payment, status)
+                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Ongoing')"
                 );
                 $update = $pdo->prepare("UPDATE bikes SET status = 'rented' WHERE id = ? AND status = 'available'");
 
@@ -110,21 +110,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         throw new RuntimeException('One bike is no longer available. Please review your cart.');
                     }
 
-                    $quantity = (int) $selection['quantity'];
+                    $duration = (int) $selection['duration'];
                     $unit = $selection['unit'];
                     $start = strtotime($selection['start_at']);
                     $seconds = ['hours' => 3600, 'days' => 86400, 'weeks' => 604800][$unit];
-                    $end = $start + ($quantity * $seconds);
+                    $end = $start + ($duration * $seconds);
                     $code = 'BM' . date('ymd') . strtoupper(bin2hex(random_bytes(3)));
-                    $total = rentalPrice($bike, $quantity, $unit);
+                    $total = rentalPrice($bike, $duration, $unit);
 
                     $insert->execute([
-                        $code, 
+                        $code,
+                        $orderCode,
                         (int) $_SESSION['user_id'], 
                         (int) $bike['id'],
                         date('Y-m-d H:i:s', $start), 
                         date('Y-m-d H:i:s', $end),
-                        $quantity, 
+                        $duration, 
                         $unit, 
                         $total, 
                         'Cash on pick-up'
@@ -135,22 +136,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         throw new RuntimeException('Someone just reserved this bike. Please try again.');
                     }
                     
-                    // Store a readable summary for the confirmation email.
                     $bookingDetails[] =
                         "Booking code: {$code}\n" .
                         "Bike: {$bike['name']}\n" .
                         "Pickup: " . date('M j, Y g:i A', $start) . "\n" .
                         "Return: " . date('M j, Y g:i A', $end) . "\n" .
-                        "Duration: {$quantity} {$unit}\n" .
-                        "Total: PHP " . number_format($total, 2);              
+                        "Duration: {$duration} {$unit}\n" .
+                        "Subtotal: PHP " . number_format($total, 2);
+                    $orderLines[] = ['name' => $bike['name'], 'duration' => $duration, 'unit' => $unit, 'subtotal' => $total, 'code' => $code, 'start' => $start, 'end' => $end];              
                 }
                 
-                // First save the booking, then attempt to send an email.
                 $pdo->commit();
                 $_SESSION['cart'] = [];
                 $notice = 'Booking confirmed! You can now view your rental history.';
 
-                // Email failure must NOT change a successfully saved booking.
+             
                 try {
                     $userQuery = $pdo->prepare('SELECT name, email FROM users WHERE id = ?');
                     $userQuery->execute([(int) $_SESSION['user_id']]);
@@ -159,9 +159,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     if ($customer) {
                         $message =
                             "Hello {$customer['name']}!\n\n" .
-                            "Your BikeMo booking has been confirmed!\n\n" .
+                            "Your BikeMo order {$orderCode} has been confirmed!\n\n" .
                             implode("\n\n", $bookingDetails) .
-                            "\n\nPayment: Cash on pick-up\n\n" .
+                            "\n\nGrand total: PHP " . number_format(array_sum(array_column($orderLines, 'subtotal')), 2) .
+                            "\nPayment: Cash on pick-up\n\n" .
                             "Thank you for choosing BikeMo!";
 
                         $emailSent = sendBikeMoEmail(
@@ -201,7 +202,7 @@ $grandTotal = array_sum(array_column($items, 'rental_total'));
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>My Cart | BikeMo</title>
-    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="../assets/css/style.css?v=profile-fix-20261102">
 </head>
 <body>
 
@@ -251,14 +252,14 @@ $grandTotal = array_sum(array_column($items, 'rental_total'));
                                         <small><?= $e($bike['type']) ?></small>
                                     </td>
                                     <td><?= $e(date('M j, Y g:i A', strtotime($bike['cart']['start_at']))) ?></td>
-                                    <td><?= (int) $bike['cart']['quantity'] ?> <?= $e($bike['cart']['unit']) ?></td>
+                                    <td><?= (int) $bike['cart']['duration'] ?> <?= $e($bike['cart']['unit']) ?></td>
                                     <td><strong><?= $peso($bike['rental_total']) ?></strong></td>
                                     <td>
                                         <form method="post" class="bm-cart-edit" novalidate>
                                             <input type="hidden" name="csrf_token" value="<?= $e($_SESSION['csrf_customer']) ?>">
                                             <input type="hidden" name="bike_id" value="<?= (int) $bike['id'] ?>">
                                             <input type="datetime-local" name="start_at" aria-label="Pickup date" value="<?= $e(date('Y-m-d\TH:i', strtotime($bike['cart']['start_at']))) ?>">
-                                            <input type="number" name="quantity" aria-label="Quantity" value="<?= (int) $bike['cart']['quantity'] ?>">
+                                            <input type="number" name="duration" aria-label="Rental duration" value="<?= (int) $bike['cart']['duration'] ?>">
                                             <select name="unit" aria-label="Duration unit">
                                                 <?php foreach (['hours', 'days', 'weeks'] as $unit): ?>
                                                     <option value="<?= $unit ?>" <?= $bike['cart']['unit'] === $unit ? 'selected' : '' ?>><?= ucfirst($unit) ?></option>

@@ -21,36 +21,6 @@ $navItems = [
     'rentals.php'   => ['▤', 'My Rentals']
 ];
 
-function bmHeader($name, $initial, $current, $navItems, $e) { 
-?>
-<header class="bm-header">
-    <div class="container bm-header__inner">
-        <a class="bm-brand" href="dashboard.php">
-            <span class="bm-brand__icon">🚲</span>
-            <span class="bm-brand__text">Bike<b>Mo</b></span>
-        </a>
-        
-        <nav class="bm-nav" aria-label="Customer navigation">
-            <?php foreach ($navItems as $file => [$icon, $label]): ?>
-                <a href="<?= $file ?>" class="bm-nav__link<?= $current === $file ? ' is-active' : '' ?>">
-                    <span><?= $icon ?></span> <?= $label ?>
-                </a>
-            <?php endforeach; ?>
-        </nav>
-        
-        <div class="bm-user">
-            <span class="bm-user__avatar"><?= $e($initial) ?></span>
-            <div class="bm-user__info">
-                <small>Signed in as</small>
-                <strong><?= $e($name) ?></strong>
-            </div>
-            <a href="profile.php" class="bm-customer-profile-link">Profile</a>
-            <a class="bm-user__logout" href="../logout.php">Logout ⏻</a>
-        </div>
-    </div>
-</header>
-<?php 
-}
 
 $notice = '';
 $error = '';
@@ -59,14 +29,14 @@ $limits = ['hours' => 72, 'days' => 30, 'weeks' => 8];
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_bike'])) {
     $token = $_POST['csrf_token'] ?? '';
     $bikeId = (int) ($_POST['bike_id'] ?? 0);
-    $quantity = filter_var($_POST['quantity'] ?? null, FILTER_VALIDATE_INT);
+    $duration = filter_var($_POST['duration'] ?? null, FILTER_VALIDATE_INT);
     $unit = $_POST['unit'] ?? '';
     $pickup = trim($_POST['start_at'] ?? '');
     $startTime = strtotime($pickup);
 
     if (!is_string($token) || !hash_equals($_SESSION['csrf_customer'], $token)) {
         $error = 'Refresh the page and try again.';
-    } elseif (!isset($limits[$unit]) || $quantity === false || $quantity < 1 || $quantity > $limits[$unit]) {
+    } elseif (!isset($limits[$unit]) || $duration === false || $duration < 1 || $duration > $limits[$unit]) {
         $error = 'Choose a valid duration (maximum 72 hours, 30 days or 8 weeks).';
     } elseif (!$startTime || $startTime < time()) {
         $error = 'Choose a future pick-up time.';
@@ -85,7 +55,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_bike'])) {
             $_SESSION['cart'][$bikeId] = [
                 'bike_id'  => $bikeId,
                 'start_at' => date('Y-m-d H:i:s', $startTime),
-                'quantity' => $quantity,
+                'duration' => $duration,
                 'unit'     => $unit
             ];
             
@@ -103,12 +73,12 @@ $bikes = $pdo->query("SELECT * FROM bikes ORDER BY status = 'available' DESC, na
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Browse Bikes | BikeMo</title>
-    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="../assets/css/style.css?v=profile-fix-20261102">
     <script src="../assets/js/main.js" defer></script>
 </head>
 <body>
 
-<?php bmHeader($name, $initial, $current, $navItems, $e); ?>
+<?php require __DIR__ . '/../includes/customer_nav.php'; ?>
 
 <main class="page customer-page">
     <div class="container">
@@ -195,8 +165,8 @@ $bikes = $pdo->query("SELECT * FROM bikes ORDER BY status = 'available' DESC, na
                                     </select>
                                 </label>
                                 
-                                <label>Quantity
-                                    <input type="number" name="quantity" value="2">
+                                <label>Rental duration
+                                    <input type="number" name="duration" value="2">
                                 </label>
                                 
                                 <button class="btn btn-primary" name="add_bike" value="1" type="submit">Add to cart →</button>

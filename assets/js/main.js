@@ -1,10 +1,7 @@
-/* BikeMo: small shared behaviors. Database work is handled by PHP, not localStorage. */
-
 function startRenting() {
     window.location.href = window.bikemoRentUrl || 'login.php?role=user';
 }
 
-// An SVG bike keeps the hero looking finished while you choose real photos.
 function heroBikeSvg() {
     return `<svg viewBox="0 0 580 355" role="img" aria-label="Illustration of a mountain bike" xmlns="http://www.w3.org/2000/svg">
       <ellipse cx="290" cy="307" rx="252" ry="19" fill="rgba(0,0,0,.23)" />

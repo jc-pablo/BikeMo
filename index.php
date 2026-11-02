@@ -20,7 +20,6 @@ $latestReviews = $pdo->query(
      ORDER BY r.created_at DESC LIMIT 3'
 )->fetchAll(PDO::FETCH_ASSOC);
 
-// Signed-in customers go straight to their bike page.
 $rentUrl = !empty($_SESSION['user_id']) && ($_SESSION['role'] ?? '') === 'user'
     ? 'customers/bikes.php'
     : 'login.php?role=user';
@@ -29,7 +28,7 @@ $esc = fn($text) => htmlspecialchars((string) $text, ENT_QUOTES, 'UTF-8');
 
 require __DIR__ . '/includes/header.php';
 ?>
-//landing
+
 <section id="view-landing" class="view">
     <nav class="nav" id="nav">
         <div class="container">

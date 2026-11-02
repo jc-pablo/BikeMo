@@ -12,7 +12,6 @@ if (!in_array($role, ['user', 'admin'], true)) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // PHP validation; do not rely on browser validation.
 
     $email = trim($_POST['email'] ?? '');
     $password = $_POST['password'] ?? '';
